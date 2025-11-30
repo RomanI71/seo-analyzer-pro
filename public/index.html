@@ -188,6 +188,12 @@
     .btn-primary:hover {
       background-color: var(--primary-dark);
     }
+    /* Active class for the button when running Full Audit */
+    .btn-primary.active {
+        background-color: var(--primary-dark);
+        opacity: 0.8;
+        cursor: wait;
+    }
 
     .btn-outline {
       background-color: transparent;
@@ -218,10 +224,17 @@
       align-items: center;
       text-align: center;
       gap: 12px;
+      border: 2px solid transparent; /* Added for active state */
     }
 
     .tool-card:hover {
       transform: translateY(-2px);
+      box-shadow: 0 4px 8px 0 rgba(60,64,67,0.3), 0 2px 6px 2px rgba(60,64,67,0.15);
+    }
+
+    /* FIX: Active state for tool cards */
+    .tool-card.active {
+      border: 2px solid var(--primary);
       box-shadow: 0 4px 8px 0 rgba(60,64,67,0.3), 0 2px 6px 2px rgba(60,64,67,0.15);
     }
 
@@ -271,15 +284,20 @@
     }
 
     .results-content {
-      max-height: 500px;
-      overflow-y: auto;
+      /* Removed fixed max-height for better flow of full audit results */
+    }
+    
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 20px;
     }
 
     .metric-card {
       background-color: var(--secondary);
       border-radius: 8px;
       padding: 16px;
-      margin-bottom: 16px;
+      border-left: 4px solid var(--primary);
     }
 
     .metric-header {
@@ -290,8 +308,9 @@
     }
 
     .metric-title {
-      font-size: 0.9rem;
-      font-weight: 500;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--primary-dark);
     }
 
     .metric-value {
@@ -338,22 +357,46 @@
       width: 100%;
       border-collapse: collapse;
       margin-top: 12px;
+      font-size: 0.9em;
     }
 
     .data-table th, .data-table td {
-      padding: 12px;
+      padding: 8px 0;
       text-align: left;
       border-bottom: 1px solid var(--border);
     }
-
+    
     .data-table th {
-      font-weight: 500;
-      color: var(--text-light);
-      font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--text-light);
+        font-size: 0.85rem;
+    }
+    
+    .data-table td:first-child {
+        font-weight: 500;
+        width: 40%;
     }
 
     .data-table tr:hover {
-      background-color: rgba(0, 0, 0, 0.02);
+      background-color: rgba(0, 0, 0, 0.01);
+    }
+    
+    pre {
+      background: #f0f0f0;
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      font-size: 0.85em;
+      margin-top: 10px;
+    }
+    
+    ul {
+        margin-left: 20px;
+        padding-left: 0;
+        list-style-type: disc;
+        font-size: 0.9em;
     }
 
     .loading {
@@ -411,12 +454,15 @@
       .tools-grid {
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
       }
+      
+      .results-grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <!-- Sidebar -->
     <div class="sidebar">
       <div class="logo">
         <h1>
@@ -478,7 +524,6 @@
       </div>
     </div>
     
-    <!-- Main Content -->
     <div class="main-content">
       <div class="header">
         <h2>Website Audit Tool</h2>
@@ -493,7 +538,7 @@
       <div class="url-input-container">
         <div class="input-group">
           <input type="text" id="url" class="url-input" placeholder="Enter website URL (e.g., https://example.com)">
-          <button class="btn btn-primary" onclick="runAll()">
+          <button class="btn btn-primary" onclick="runAll(this)">
             <span>🚀</span>
             Run Full Audit
           </button>
@@ -501,73 +546,73 @@
       </div>
       
       <div class="tools-grid">
-        <div class="tool-card" onclick="seoCheck()">
+        <div class="tool-card active" onclick="seoCheck(this)" data-endpoint="seo">
           <div class="tool-icon">🔍</div>
           <h3>SEO Check</h3>
           <p>Title, Meta & H1 Analysis</p>
         </div>
         
-        <div class="tool-card" onclick="brokenLinks()">
+        <div class="tool-card" onclick="brokenLinks(this)" data-endpoint="broken-links">
           <div class="tool-icon">🔗</div>
           <h3>Broken Links</h3>
           <p>Find 404 errors on your site</p>
         </div>
         
-        <div class="tool-card" onclick="metaAudit()">
+        <div class="tool-card" onclick="metaAudit(this)" data-endpoint="meta">
           <div class="tool-icon">📄</div>
           <h3>Meta Audit</h3>
           <p>Complete meta tags analysis</p>
         </div>
         
-        <div class="tool-card" onclick="keywords()">
+        <div class="tool-card" onclick="keywords(this)" data-endpoint="keywords">
           <div class="tool-icon">🔑</div>
           <h3>Keywords</h3>
           <p>Extract top keywords</p>
         </div>
         
-        <div class="tool-card" onclick="alts()">
+        <div class="tool-card" onclick="altsCheck(this)" data-endpoint="alts">
           <div class="tool-icon">🖼️</div>
           <h3>Image Alt Check</h3>
           <p>Find images without alt text</p>
         </div>
         
-        <div class="tool-card" onclick="robots()">
+        <div class="tool-card" onclick="robotsCheck(this)" data-endpoint="robots">
           <div class="tool-icon">🤖</div>
           <h3>Robots.txt</h3>
           <p>Analyze robots.txt file</p>
         </div>
         
-        <div class="tool-card" onclick="sitemap()">
+        <div class="tool-card" onclick="sitemapCheck(this)" data-endpoint="sitemap">
           <div class="tool-icon">🗺️</div>
           <h3>Sitemap</h3>
           <p>Check sitemap.xml</p>
         </div>
         
-        <div class="tool-card" onclick="pageSpeed()">
+        <div class="tool-card" onclick="pageSpeed(this)" data-endpoint="pagespeed">
           <div class="tool-icon">⚡</div>
           <h3>Page Speed</h3>
           <p>Performance metrics</p>
         </div>
         
-        <div class="tool-card" onclick="linksReport()">
+        <div class="tool-card" onclick="linksReport(this)" data-endpoint="links-report">
           <div class="tool-icon">📊</div>
           <h3>Links Report</h3>
           <p>Internal & external links</p>
         </div>
         
-        <div class="tool-card" onclick="headings()">
+        <div class="tool-card" onclick="headings(this)" data-endpoint="headings">
           <div class="tool-icon">📑</div>
           <h3>Headings</h3>
           <p>H1-H6 structure analysis</p>
         </div>
         
-        <div class="tool-card" onclick="wordCount()">
+        <div class="tool-card" onclick="wordCount(this)" data-endpoint="wordcount">
           <div class="tool-icon">📝</div>
           <h3>Word Count</h3>
           <p>Content length & readability</p>
         </div>
         
-        <div class="tool-card" onclick="tech()">
+        <div class="tool-card" onclick="tech(this)" data-endpoint="tech">
           <div class="tool-icon">🛠️</div>
           <h3>Tech Stack</h3>
           <p>Detect technologies used</p>
@@ -577,13 +622,18 @@
       <div class="results-container">
         <div class="results-header">
           <h3 class="results-title">Audit Results</h3>
-          <div class="status-badge status-good">Ready</div>
+          <div class="status-badge status-good" id="result-status">Ready</div>
         </div>
         
-        <div class="results-content" id="output">
-          <div class="loading" id="defaultMessage">
-            <div class="spinner"></div>
-            <p>Enter a URL and run an audit to see results</p>
+        <div class="results-content">
+          <div class="results-grid" id="output">
+            <div class="metric-card" style="border-left-color: var(--warning);">
+                <div class="metric-header">
+                  <div class="metric-title">Welcome</div>
+                </div>
+                <p>Select a tool from the grid above or enter a URL and click "Run Full Audit" to begin your analysis.</p>
+                <p style="margin-top: 10px;">**Important:** Please ensure your Node.js server is running in the background (`node server.js`).</p>
+            </div>
           </div>
         </div>
       </div>
@@ -591,105 +641,178 @@
   </div>
 
   <script>
-    // API functions
+    // Utility function to make API calls
     async function api(path, url) {
-      const res = await fetch(`/api/${path}?url=${encodeURIComponent(url)}`);
-      return res.json();
+      try {
+        const res = await fetch(`/api/${path}?url=${encodeURIComponent(url)}`);
+        if (!res.ok) {
+            const errorText = await res.text();
+            return { error: `HTTP Error: ${res.status}`, details: errorText || `API endpoint /api/${path} failed.` };
+        }
+        return res.json();
+      } catch (error) {
+        return { 
+            error: 'Network Error', 
+            details: 'Could not connect to the API server. Is the Node.js server running?' 
+        };
+      }
+    }
+    
+    // Utility to set active tool card (FIX: Cleaner State Management)
+    function setActiveToolCard(cardElement) {
+      document.querySelectorAll('.tool-card').forEach(c => {
+        c.classList.remove('active');
+      });
+      // Also remove active state from the main button if an individual tool is clicked
+      document.querySelector('.url-input-container .btn-primary').classList.remove('active'); 
+      if (cardElement) {
+        cardElement.classList.add('active');
+      }
     }
     
     function show(obj) { 
-      document.getElementById('output').innerHTML = formatResults(obj);
+      const outputDiv = document.getElementById('output');
+      outputDiv.innerHTML = formatResults(obj);
+      // Scroll to results
+      outputDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
     
+    // Consolidated function for displaying results (FIX: Logic for all 12 checks and Full Audit)
     function formatResults(data) {
       if (!data) return '<p>No data to display</p>';
       
-      // If it's an error
+      // Check if it's an error object (can be single check or nested in full audit)
       if (data.error) {
         return `
-          <div class="metric-card">
+          <div class="metric-card" style="border-left-color: var(--danger);">
             <div class="metric-header">
-              <div class="metric-title">Error</div>
+              <div class="metric-title">❌ Error: ${data.error}</div>
             </div>
-            <p>${data.error}</p>
+            <p>Details: ${data.details || 'No additional information.'}</p>
           </div>
         `;
       }
       
       let html = '';
       
-      // Handle different types of results
-      if (data.title || data.description || data.h1) {
-        // SEO Check results
-        html += `
-          <div class="metric-card">
+      // 1. Handle Full Audit Result (Nested Object from /api/all)
+      if (data.seo && data.headings) { 
+        
+        const displayOrder = ['seo', 'headings', 'wordcount', 'keywords', 'alts', 'tech', 'pagespeed', 'links-report', 'broken-links', 'meta', 'robots', 'sitemap'];
+        
+        html += '<div class="results-grid">';
+
+        displayOrder.forEach(key => {
+          const result = data[key];
+          let title = key.toUpperCase().replace('-', ' ');
+          if (title === 'LINKS REPORT') title = 'Link Report';
+          
+          if (result && result.error) {
+            html += `
+              <div class="metric-card" style="border-left-color: var(--danger);">
+                <div class="metric-header">
+                  <div class="metric-title">❌ ${title} Check Failed</div>
+                </div>
+                <p><strong>Error:</strong> ${result.error}</p>
+                <p style="font-size: 0.8em;">Details: ${result.details || 'Check your server logs.'}</p>
+              </div>
+            `;
+          } else if (result) {
+            // Recursively call formatResults to display each section
+            html += formatResults(result); 
+          }
+        });
+        
+        html += '</div>';
+        return html;
+      }
+      
+      // 2. Handle Individual Check Results
+      
+      // SEO Check (title, description, h1)
+      if (data.title !== undefined && data.description !== undefined && data.h1 !== undefined) {
+        const total = (data.title ? 1 : 0) + (data.description ? 1 : 0) + (data.h1 ? 1 : 0);
+        const statusClass = total >= 2 ? 'status-good' : total > 0 ? 'status-warning' : 'status-danger';
+        
+        return `
+          <div class="metric-card" style="border-left-color: var(--primary);">
             <div class="metric-header">
               <div class="metric-title">SEO Elements</div>
+              <span class="status-badge ${statusClass}">${total}/3 Found</span>
             </div>
             <table class="data-table">
               <tr>
-                <td><strong>Title</strong></td>
+                <td><strong>Title (${data.title ? data.title.length : 0} chars)</strong></td>
                 <td>${data.title || '<span class="status-badge status-danger">Missing</span>'}</td>
               </tr>
               <tr>
-                <td><strong>Meta Description</strong></td>
+                <td><strong>Meta Description (${data.description ? data.description.length : 0} chars)</strong></td>
                 <td>${data.description || '<span class="status-badge status-danger">Missing</span>'}</td>
               </tr>
               <tr>
-                <td><strong>H1</strong></td>
-                <td>${data.h1 || '<span class="status-badge status-danger">Missing</span>'}</td>
+                <td><strong>H1 Tag</strong></td>
+                <td style="word-break: break-all;">${data.h1 || '<span class="status-badge status-danger">Missing</span>'}</td>
               </tr>
             </table>
           </div>
         `;
-      } else if (data.total !== undefined && data.broken !== undefined) {
-        // Broken links results
-        html += `
-          <div class="metric-card">
+      } 
+      
+      // Broken Links
+      else if (data.total !== undefined && data.broken !== undefined) {
+        const statusClass = data.broken.length === 0 ? 'status-good' : 'status-danger';
+        return `
+          <div class="metric-card" style="border-left-color: ${data.broken.length === 0 ? 'var(--success)' : 'var(--danger)'};">
             <div class="metric-header">
               <div class="metric-title">Broken Links Analysis</div>
+              <span class="status-badge ${statusClass}">${data.broken.length === 0 ? 'Clean' : `${data.broken.length} Broken`}</span>
             </div>
-            <p><strong>Total Links:</strong> ${data.total}</p>
-            <p><strong>Broken Links:</strong> ${data.broken.length}</p>
+            <p><strong>Total Links/Resources Checked:</strong> ${data.total}</p>
             ${data.broken.length > 0 ? `
-              <h4>Broken URLs:</h4>
-              <ul>
+              <h4 style="margin-top: 10px;">Broken URLs Found (Showing all ${data.broken.length}):</h4>
+              <ul style="font-size: 0.85em;">
                 ${data.broken.map(link => `<li>${link}</li>`).join('')}
               </ul>
-            ` : '<p class="status-badge status-good">No broken links found</p>'}
+            ` : '<p style="margin-top: 5px;" class="status-badge status-good">No broken links found among the samples checked (A, IMG, LINK tags).</p>'}
           </div>
         `;
-      } else if (data.metas || data.missing) {
-        // Meta audit results
-        html += `
-          <div class="metric-card">
+      } 
+      
+      // Meta Audit
+      else if (data.metas || data.missing) {
+        const statusClass = data.missing.length === 0 ? 'status-good' : 'status-warning';
+        return `
+          <div class="metric-card" style="border-left-color: var(--primary);">
             <div class="metric-header">
-              <div class="metric-title">Meta Tags</div>
+              <div class="metric-title">Meta Tags Audit</div>
+              <span class="status-badge ${statusClass}">${data.missing.length === 0 ? 'Complete' : `${data.missing.length} Missing`}</span>
             </div>
-            <h4>Found Meta Tags:</h4>
+            <h4 style="font-size: 0.9em; margin-top: 5px;">Found Tags:</h4>
             <table class="data-table">
               ${Object.entries(data.metas || {}).map(([key, value]) => `
                 <tr>
-                  <td><strong>${key}</strong></td>
-                  <td>${value || 'Empty'}</td>
+                  <td><strong>${key.replace('og:', 'OpenGraph: ').substring(0, 30)}</strong></td>
+                  <td style="word-break: break-all;">${(value || 'Empty').substring(0, 100)}...</td>
                 </tr>
               `).join('')}
             </table>
             
             ${data.missing && data.missing.length > 0 ? `
-              <h4>Missing Important Meta Tags:</h4>
-              <ul>
+              <h4 style="margin-top: 15px; color: var(--danger); font-size: 0.9em;">Missing Important Tags:</h4>
+              <ul style="color: var(--danger);">
                 ${data.missing.map(tag => `<li>${tag}</li>`).join('')}
               </ul>
             ` : ''}
           </div>
         `;
-      } else if (data.keywords) {
-        // Keywords results
-        html += `
-          <div class="metric-card">
+      }
+      
+      // Keywords
+      else if (data.keywords && data.keywords.length) {
+        return `
+          <div class="metric-card" style="border-left-color: var(--primary);">
             <div class="metric-header">
-              <div class="metric-title">Top Keywords</div>
+              <div class="metric-title">Top Keywords (Density)</div>
             </div>
             <table class="data-table">
               <tr>
@@ -705,10 +828,159 @@
             </table>
           </div>
         `;
-      } else if (data.words || data.sentences) {
-        // Word count results
-        html += `
-          <div class="metric-card">
+      } 
+      
+      // Image Alt Check
+      else if (data.total !== undefined && data.missing_count !== undefined) {
+        const missingCount = data.missing_count || (data.missing ? data.missing.length : 0);
+        const statusClass = missingCount === 0 ? 'status-good' : 'status-danger';
+        return `
+          <div class="metric-card" style="border-left-color: ${missingCount === 0 ? 'var(--success)' : 'var(--danger)'};">
+            <div class="metric-header">
+              <div class="metric-title">Image Alt Tags Check</div>
+              <span class="status-badge ${statusClass}">${missingCount === 0 ? 'Clean' : `${missingCount} Missing`}</span>
+            </div>
+            <p><strong>Total Images:</strong> ${data.total}</p>
+            <p><strong>Images Missing Alt:</strong> ${missingCount}</p>
+            
+            ${missingCount > 0 ? `
+              <h4 style="margin-top: 10px;">Sample Missing Alt Tags:</h4>
+              <ul>
+                ${data.missing.map(img => `<li style="word-break: break-all;">${img.src || 'Source Missing'}</li>`).join('')}
+              </ul>
+            ` : ''}
+          </div>
+        `;
+      }
+      
+      // Robots.txt
+      else if (data.robots !== undefined) {
+        const isError = data.status === 'error';
+        const statusClass = isError ? 'status-danger' : 'status-good';
+        return `
+          <div class="metric-card" style="border-left-color: ${isError ? 'var(--danger)' : 'var(--success)'};">
+            <div class="metric-header">
+              <div class="metric-title">Robots.txt Status</div>
+              <span class="status-badge ${statusClass}">${isError ? 'Not Found / Error' : 'Found'}</span>
+            </div>
+            ${!isError ? `<pre>${data.robots.substring(0, 500)}...</pre>` : '<p>The robots.txt file was not found at the root of the domain (404/Network Error).</p>'}
+          </div>
+        `;
+      }
+      
+      // Sitemap
+      else if (data.urls !== undefined) {
+        const isError = data.status === 'error';
+        const total = data.urls.length || 0;
+        const statusClass = !isError && total > 0 ? 'status-good' : 'status-warning';
+        return `
+          <div class="metric-card" style="border-left-color: ${!isError && total > 0 ? 'var(--success)' : 'var(--warning)'};">
+            <div class="metric-header">
+              <div class="metric-title">Sitemap.xml Check</div>
+              <span class="status-badge ${statusClass}">${!isError && total > 0 ? 'Found' : 'Not Found/Empty'}</span>
+            </div>
+            <p><strong>Total URLs Found:</strong> ${total}</p>
+            ${!isError && total > 0 ? `
+              <h4 style="margin-top: 10px;">Sample URLs (First 5):</h4>
+              <ul>
+                ${data.urls.slice(0, 5).map(link => `<li style="word-break: break-all;">${link}</li>`).join('')}
+              </ul>
+            ` : '<p>The sitemap.xml file was not found or is empty.</p>'}
+          </div>
+        `;
+      }
+      
+      // Page Speed
+      else if (data.load_ms !== undefined) {
+        const speedStatus = data.load_ms < 2000 ? 'status-good' : data.load_ms < 5000 ? 'status-warning' : 'status-danger';
+        const statusText = data.load_ms < 2000 ? 'Fast' : data.load_ms < 5000 ? 'Moderate' : 'Slow';
+        
+        return `
+          <div class="metric-card" style="border-left-color: ${data.load_ms < 2000 ? 'var(--success)' : 'var(--warning)'};">
+            <div class="metric-header">
+              <div class="metric-title">Page Speed Metrics (Basic)</div>
+              <span class="status-badge ${speedStatus}">${statusText}</span>
+            </div>
+            <table class="data-table">
+              <tr>
+                <td><strong>Load Time</strong></td>
+                <td>${data.load_ms} ms</td>
+              </tr>
+              <tr>
+                <td><strong>Page Size</strong></td>
+                <td>${(data.size_bytes / 1024).toFixed(2)} KB</td>
+              </tr>
+              <tr>
+                <td><strong>Total Resources</strong></td>
+                <td>${data.resources}</td>
+              </tr>
+            </table>
+          </div>
+        `;
+      }
+      
+      // Links Report
+      else if (data.internal_count !== undefined) {
+        return `
+          <div class="metric-card" style="border-left-color: var(--primary);">
+            <div class="metric-header">
+              <div class="metric-title">Link Report</div>
+            </div>
+            <table class="data-table">
+              <tr>
+                <td><strong>Total Internal Links</strong></td>
+                <td>${data.internal_count}</td>
+              </tr>
+              <tr>
+                <td><strong>Total External Links</strong></td>
+                <td>${data.external_count}</td>
+              </tr>
+            </table>
+            
+            <h4 style="margin-top: 10px; font-size: 0.9em;">Sample Internal Links:</h4>
+            <ul>
+              ${data.internal.slice(0, 5).map(link => `<li style="word-break: break-all;">${link}</li>`).join('')}
+            </ul>
+          </div>
+        `;
+      }
+      
+      // Headings Analysis
+      else if (data.headings) {
+        let h1Count = data.headings.h1 ? data.headings.h1.length : 0;
+        let h1Status = h1Count === 1 ? 'status-good' : h1Count > 1 ? 'status-danger' : 'status-warning';
+        let h1Text = h1Count === 1 ? 'Perfect' : h1Count > 1 ? 'Multiple H1s!' : 'Missing H1';
+        
+        let headingRows = Object.entries(data.headings).map(([tag, list]) => {
+          let count = list.length || 0;
+          let listHtml = count > 0 ? list.slice(0, 3).map(text => `<li style="word-break: break-all;">${text}</li>`).join('') : `<li>None found</li>`;
+          return `
+            <div style="margin-top: 10px;">
+              <strong>${tag.toUpperCase()} (${count})</strong>:
+              <ul style="margin-left: 20px;">${listHtml}</ul>
+            </div>
+          `;
+        }).join('');
+
+        return `
+          <div class="metric-card" style="border-left-color: ${h1Count === 1 ? 'var(--success)' : 'var(--danger)'};">
+            <div class="metric-header">
+              <div class="metric-title">Heading Structure Analysis</div>
+              <span class="status-badge ${h1Status}">${h1Text}</span>
+            </div>
+            ${headingRows}
+          </div>
+        `;
+      }
+      
+      // Word Count & Readability
+      else if (data.words !== undefined && data.sentences !== undefined) {
+        const flesch = data.flesch_reading_score;
+        const scoreStatus = flesch > 60 ? 'status-good' : flesch > 30 ? 'status-warning' : 'status-danger';
+        const scoreText = flesch > 60 ? 'Good' : flesch > 30 ? 'Fair' : 'Poor';
+        
+        return `
+          <div class="metric-card" style="border-left-color: ${flesch > 60 ? 'var(--success)' : 'var(--warning)'};">
             <div class="metric-header">
               <div class="metric-title">Content Analysis</div>
             </div>
@@ -722,12 +994,10 @@
                 <td>${data.sentences}</td>
               </tr>
               <tr>
-                <td><strong>Readability Score</strong></td>
+                <td><strong>Readability Score (Flesch)</strong></td>
                 <td>
-                  ${data.flesch_reading_score} 
-                  <span class="status-badge ${data.flesch_reading_score > 60 ? 'status-good' : data.flesch_reading_score > 30 ? 'status-warning' : 'status-danger'}">
-                    ${data.flesch_reading_score > 60 ? 'Good' : data.flesch_reading_score > 30 ? 'Fair' : 'Poor'}
-                  </span>
+                  ${flesch} 
+                  <span class="status-badge ${scoreStatus}">${scoreText}</span>
                 </td>
               </tr>
               <tr>
@@ -737,145 +1007,183 @@
             </table>
           </div>
         `;
-      } else {
-        // Generic JSON display for other endpoints
-        html += `
-          <div class="metric-card">
-            <pre>${JSON.stringify(data, null, 2)}</pre>
+      }
+      
+      // Tech Stack
+      else if (data.tech && data.tech.cms !== undefined) {
+        const techData = data.tech;
+        return `
+          <div class="metric-card" style="border-left-color: var(--primary);">
+            <div class="metric-header">
+              <div class="metric-title">Tech Stack Detection</div>
+            </div>
+            <table class="data-table">
+              <tr>
+                <td><strong>CMS/Platform</strong></td>
+                <td>${techData.cms || '<span class="status-badge status-warning">Not detected</span>'}</td>
+              </tr>
+              <tr>
+                <td><strong>JavaScript Frameworks</strong></td>
+                <td>${techData.frameworks.length > 0 ? techData.frameworks.join(', ') : 'None detected'}</td>
+              </tr>
+              <tr>
+                <td><strong>Web Server</strong></td>
+                <td>${techData.hosting || '<span class="status-badge status-warning">Not detected</span></td>
+              </tr>
+            </table>
           </div>
         `;
       }
       
-      return html;
+      // Fallback for unexpected JSON
+      return `
+        <div class="metric-card" style="border-left-color: var(--warning);">
+          <div class="metric-header">
+            <div class="metric-title">Unrecognized Format</div>
+          </div>
+          <p>The API returned data in an unexpected format. Showing raw JSON:</p>
+          <pre>${JSON.stringify(data, null, 2)}</pre>
+        </div>
+      `;
     }
     
-    async function runAll() {
+    // ========== API Functions (Updated to use setActiveToolCard) ==========
+
+    async function runAll(cardElement) {
+      // Set 'active' class on the main button
+      setActiveToolCard(null); // Clear tool grid cards
+      cardElement.classList.add('active'); 
+      cardElement.disabled = true; // Disable button
+      
       const url = document.getElementById('url').value.trim();
       if (!url) {
         alert('Please enter a valid URL');
+        cardElement.classList.remove('active');
+        cardElement.disabled = false;
         return;
       }
       
       document.getElementById('output').innerHTML = `
         <div class="loading">
           <div class="spinner"></div>
-          <p>Running full audit... This may take a moment</p>
+          <p>Running full audit (12 checks)... This may take up to 30 seconds.</p>
         </div>
       `;
+      document.getElementById('result-status').textContent = 'Running...';
+      document.getElementById('result-status').className = 'status-badge status-warning';
       
-      try {
-        const res = await fetch(`/api/all?url=${encodeURIComponent(url)}`);
-        const data = await res.json();
-        show(data);
-      } catch (error) {
-        document.getElementById('output').innerHTML = `
-          <div class="metric-card">
-            <div class="metric-header">
-              <div class="metric-title">Error</div>
-            </div>
-            <p>Failed to run audit: ${error.message}</p>
-          </div>
-        `;
-      }
+      const data = await api('all', url);
+      show(data);
+      document.getElementById('result-status').textContent = data.error ? 'Error' : 'Complete';
+      document.getElementById('result-status').className = 'status-badge ' + (data.error ? 'status-danger' : 'status-good');
+      cardElement.classList.remove('active');
+      cardElement.disabled = false;
+      // Set SEO as active card after full audit
+      setActiveToolCard(document.querySelector('[data-endpoint="seo"]'));
     }
     
-    // Individual audit functions
-    async function seoCheck() { 
+    // Updated individual functions to pass the cardElement to setActiveToolCard
+    async function seoCheck(cardElement) { 
+      setActiveToolCard(cardElement);
       const url = document.getElementById('url').value.trim();
       if (!url) { alert('Please enter URL'); return; }
       document.getElementById('output').innerHTML = '<div class="loading"><div class="spinner"></div><p>Running SEO Check...</p></div>';
       show(await api('seo', url));
     }
     
-    async function brokenLinks() { 
+    async function brokenLinks(cardElement) { 
+      setActiveToolCard(cardElement);
       const url = document.getElementById('url').value.trim();
       if (!url) { alert('Please enter URL'); return; }
-      document.getElementById('output').innerHTML = '<div class="loading"><div class="spinner"></div><p>Checking for broken links...</p></div>';
+      document.getElementById('output').innerHTML = '<div class="loading"><div class="spinner"></div><p>Checking for broken links (slow check of 20 resources)...</p></div>';
       show(await api('broken-links', url));
     }
     
-    async function metaAudit() { 
+    async function metaAudit(cardElement) { 
+      setActiveToolCard(cardElement);
       const url = document.getElementById('url').value.trim();
       if (!url) { alert('Please enter URL'); return; }
       document.getElementById('output').innerHTML = '<div class="loading"><div class="spinner"></div><p>Analyzing meta tags...</p></div>';
       show(await api('meta', url));
     }
     
-    async function keywords() { 
+    async function keywords(cardElement) { 
+      setActiveToolCard(cardElement);
       const url = document.getElementById('url').value.trim();
       if (!url) { alert('Please enter URL'); return; }
       document.getElementById('output').innerHTML = '<div class="loading"><div class="spinner"></div><p>Extracting keywords...</p></div>';
       show(await api('keywords', url));
     }
     
-    async function alts() { 
+    async function altsCheck(cardElement) { 
+      setActiveToolCard(cardElement);
       const url = document.getElementById('url').value.trim();
       if (!url) { alert('Please enter URL'); return; }
       document.getElementById('output').innerHTML = '<div class="loading"><div class="spinner"></div><p>Checking image alt attributes...</p></div>';
       show(await api('alts', url));
     }
     
-    async function robots() { 
+    async function robotsCheck(cardElement) { 
+      setActiveToolCard(cardElement);
       const url = document.getElementById('url').value.trim();
       if (!url) { alert('Please enter URL'); return; }
       document.getElementById('output').innerHTML = '<div class="loading"><div class="spinner"></div><p>Fetching robots.txt...</p></div>';
       show(await api('robots', url));
     }
     
-    async function sitemap() { 
+    async function sitemapCheck(cardElement) { 
+      setActiveToolCard(cardElement);
       const url = document.getElementById('url').value.trim();
       if (!url) { alert('Please enter URL'); return; }
       document.getElementById('output').innerHTML = '<div class="loading"><div class="spinner"></div><p>Checking sitemap...</p></div>';
       show(await api('sitemap', url));
     }
     
-    async function pageSpeed() { 
+    async function pageSpeed(cardElement) { 
+      setActiveToolCard(cardElement);
       const url = document.getElementById('url').value.trim();
       if (!url) { alert('Please enter URL'); return; }
       document.getElementById('output').innerHTML = '<div class="loading"><div class="spinner"></div><p>Measuring page speed...</p></div>';
       show(await api('pagespeed', url));
     }
     
-    async function linksReport() { 
+    async function linksReport(cardElement) { 
+      setActiveToolCard(cardElement);
       const url = document.getElementById('url').value.trim();
       if (!url) { alert('Please enter URL'); return; }
       document.getElementById('output').innerHTML = '<div class="loading"><div class="spinner"></div><p>Analyzing links...</p></div>';
       show(await api('links-report', url));
     }
     
-    async function headings() { 
+    async function headings(cardElement) { 
+      setActiveToolCard(cardElement);
       const url = document.getElementById('url').value.trim();
       if (!url) { alert('Please enter URL'); return; }
       document.getElementById('output').innerHTML = '<div class="loading"><div class="spinner"></div><p>Checking heading structure...</p></div>';
       show(await api('headings', url));
     }
     
-    async function wordCount() { 
+    async function wordCount(cardElement) { 
+      setActiveToolCard(cardElement);
       const url = document.getElementById('url').value.trim();
       if (!url) { alert('Please enter URL'); return; }
       document.getElementById('output').innerHTML = '<div class="loading"><div class="spinner"></div><p>Analyzing content...</p></div>';
       show(await api('wordcount', url));
     }
     
-    async function tech() { 
+    async function tech(cardElement) { 
+      setActiveToolCard(cardElement);
       const url = document.getElementById('url').value.trim();
       if (!url) { alert('Please enter URL'); return; }
       document.getElementById('output').innerHTML = '<div class="loading"><div class="spinner"></div><p>Detecting tech stack...</p></div>';
       show(await api('tech', url));
     }
     
-    // Set up event listeners for tool cards
-    document.querySelectorAll('.tool-card').forEach(card => {
-      card.addEventListener('click', function() {
-        // Remove active class from all cards
-        document.querySelectorAll('.tool-card').forEach(c => {
-          c.style.border = 'none';
-        });
-        
-        // Add active style to clicked card
-        this.style.border = '2px solid var(--primary)';
-      });
-    });
+    // Set initial active state
+    window.onload = function() {
+        // Find the first tool card and set it as active on load
+        setActiveToolCard(document.querySelector('.tool-card[data-endpoint="seo"]'));
+    }
   </script>
 </body>
 </html>

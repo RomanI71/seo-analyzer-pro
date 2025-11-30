@@ -22,13 +22,18 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Safe HTTP request function
+// Safe HTTP request function (Updated to be more robust)
 function safeGet(url) {
   return axios.get(url, {
     timeout: 10000,
     headers: {
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-    }
+    },
+    validateStatus: (status) => {
+      // Allow 2xx, 3xx (redirects), but treat 4xx, 5xx as errors
+      return status >= 200 && status < 400; 
+    },
+    maxRedirects: 5 // Follow up to 5 redirects
   });
 }
 
@@ -70,7 +75,7 @@ app.get('/api/seo', async (req, res) => {
   }
 });
 
-// Broken Links Check
+// Broken Links Check (IMPROVED: Checks A, IMG, LINK tags and more links)
 app.get('/api/broken-links', async (req, res) => {
   try {
     const url = req.query.url;
@@ -78,26 +83,64 @@ app.get('/api/broken-links', async (req, res) => {
 
     const response = await safeGet(url);
     const $ = cheerio.load(response.data);
+    const origin = new URL(url).origin;
     
     let links = [];
+
+    // 1. Hyperlinks (a[href])
     $('a[href]').each((i, el) => {
       const href = $(el).attr('href');
-      if (href && href.startsWith('http')) {
+      if (href && href.startsWith('http') && !href.startsWith(origin)) {
         links.push(href);
       }
     });
 
-    // Remove duplicates and check first 5 links
-    links = [...new Set(links)].slice(0, 5);
+    // 2. Image Sources (img[src])
+    $('img[src]').each((i, el) => {
+        let src = $(el).attr('src');
+        if (src) {
+            // Resolve relative URLs to absolute
+            if (src.startsWith('//')) src = 'http:' + src;
+            if (!src.startsWith('http')) {
+              src = new URL(src, url).href;
+            }
+            if (!src.startsWith(origin)) { // Only check external images
+              links.push(src);
+            }
+        }
+    });
+
+    // 3. Stylesheets and Resources (link[href] and script[src])
+    $('link[href], script[src]').each((i, el) => {
+        let href = $(el).attr('href') || $(el).attr('src');
+        if (href) {
+            if (href.startsWith('//')) href = 'http:' + href;
+            if (!href.startsWith('http')) {
+              href = new URL(href, url).href;
+            }
+            // Include internal resource links as well, since they can be broken
+            links.push(href);
+        }
+    });
+
+
+    // Remove duplicates and check first 20 links for performance
+    links = [...new Set(links)].slice(0, 20);
     let broken = [];
 
-    for (const link of links) {
+    // Check status for each link
+    await Promise.all(links.map(async (link) => {
       try {
-        await safeGet(link);
+        await axios.head(link, { timeout: 8000 }); // Use HEAD for faster check
       } catch (e) {
-        broken.push(link);
+        // Only report 4xx or 5xx errors (e.g., 404, 500)
+        if (e.response && (e.response.status >= 400 || e.response.status === 0)) {
+            broken.push(`${link} (Status: ${e.response.status || 'Timeout'})`);
+        } else if (e.code === 'ECONNABORTED') {
+             broken.push(`${link} (Status: Timeout)`);
+        }
       }
-    }
+    }));
 
     res.json({
       total: links.length,
@@ -230,7 +273,8 @@ app.get('/api/robots', async (req, res) => {
   } catch (error) {
     res.json({ 
       error: 'robots.txt not found',
-      status: 'success'
+      status: 'error',
+      details: 'Could not fetch robots.txt file (404/Network Error)'
     });
   }
 });
@@ -257,7 +301,8 @@ app.get('/api/sitemap', async (req, res) => {
   } catch (error) {
     res.json({ 
       error: 'sitemap not found',
-      status: 'success'
+      status: 'error',
+      details: 'Could not fetch sitemap.xml file (404/Network Error)'
     });
   }
 });
@@ -309,6 +354,7 @@ app.get('/api/links-report', async (req, res) => {
       let href = $(el).attr('href');
       if (!href) return;
       
+      // Resolve relative links
       if (href.startsWith('/')) {
         internal.add(origin + href);
       } else if (href.startsWith('http')) {
@@ -321,8 +367,8 @@ app.get('/api/links-report', async (req, res) => {
     });
 
     res.json({
-      internal: Array.from(internal),
-      external: Array.from(external),
+      internal: Array.from(internal).slice(0, 50),
+      external: Array.from(external).slice(0, 50),
       internal_count: internal.size,
       external_count: external.size,
       status: 'success'
@@ -380,20 +426,24 @@ app.get('/api/wordcount', async (req, res) => {
     const words = text.split(/\s+/).filter(w => w.trim());
     
     let syllables = 0;
-    for (const w of words.slice(0, 100)) {
+    // Only calculate for first 500 words for performance
+    for (const w of words.slice(0, 500)) { 
       syllables += countSyllables(w);
     }
     
+    // Flesch Reading Ease Formula
+    const ASL = words.length / Math.max(sentences.length, 1); // Average Sentence Length
+    const ASW = syllables / Math.max(words.length, 1);       // Average Syllables per Word
+
     const flesch = Math.round(
       206.835 - 
-      1.015 * (words.length / Math.max(sentences.length, 1)) - 
-      84.6 * (syllables / Math.max(words.length, 1))
+      1.015 * ASL - 
+      84.6 * ASW
     );
 
     res.json({
       words: words.length,
       sentences: sentences.length,
-      syllables,
       flesch_reading_score: Math.max(0, Math.min(100, flesch)),
       read_time_min: Math.ceil(words.length / 200),
       status: 'success'
@@ -428,23 +478,28 @@ app.get('/api/tech', async (req, res) => {
     
     if (html.includes('wp-content') || html.includes('wp-includes')) {
       tech.cms = 'WordPress';
-    }
-    if (html.includes('shopify.com')) {
+    } else if (html.includes('shopify.com') || $('link[href*="shopify.com"]').length) {
       tech.cms = 'Shopify';
+    } else if ($('script[src*="wix.com"]').length) {
+       tech.cms = 'Wix';
     }
+
 
     // Check Frameworks
     const scripts = $('script[src]').map((_, el) => $(el).attr('src')).get();
+    const frameworkSet = new Set();
     
     if (html.includes('react') || scripts.some(s => s && s.includes('react'))) {
-      tech.frameworks.push('React');
+      frameworkSet.add('React');
     }
     if (html.includes('jquery') || scripts.some(s => s && s.includes('jquery'))) {
-      tech.frameworks.push('jQuery');
+      frameworkSet.add('jQuery');
     }
     if (html.includes('vue') || scripts.some(s => s && s.includes('vue'))) {
-      tech.frameworks.push('Vue.js');
+      frameworkSet.add('Vue.js');
     }
+
+    tech.frameworks = Array.from(frameworkSet);
 
     // Server info
     if (response.headers && response.headers.server) {
@@ -463,74 +518,53 @@ app.get('/api/tech', async (req, res) => {
   }
 });
 
-// Full Audit - All Tools Combined
+// Full Audit - All Tools Combined (FIXED: Now runs all individual checks)
 app.get('/api/all', async (req, res) => {
   try {
     const url = req.query.url;
     if (!url) return res.json({ error: 'URL missing' });
 
-    const results = {};
-    const endpoints = [
-      'seo', 'meta', 'alts', 'headings', 'wordcount', 
-      'keywords', 'links-report', 'broken-links', 
-      'sitemap', 'robots', 'pagespeed', 'tech'
+    const apiCalls = [
+      axios.get(`http://localhost:${PORT}/api/seo?url=${encodeURIComponent(url)}`),
+      axios.get(`http://localhost:${PORT}/api/meta?url=${encodeURIComponent(url)}`),
+      axios.get(`http://localhost:${PORT}/api/alts?url=${encodeURIComponent(url)}`),
+      axios.get(`http://localhost:${PORT}/api/headings?url=${encodeURIComponent(url)}`),
+      axios.get(`http://localhost:${PORT}/api/wordcount?url=${encodeURIComponent(url)}`),
+      axios.get(`http://localhost:${PORT}/api/keywords?url=${encodeURIComponent(url)}`),
+      axios.get(`http://localhost:${PORT}/api/links-report?url=${encodeURIComponent(url)}`),
+      axios.get(`http://localhost:${PORT}/api/broken-links?url=${encodeURIComponent(url)}`),
+      axios.get(`http://localhost:${PORT}/api/sitemap?url=${encodeURIComponent(url)}`),
+      axios.get(`http://localhost:${PORT}/api/robots?url=${encodeURIComponent(url)}`),
+      axios.get(`http://localhost:${PORT}/api/pagespeed?url=${encodeURIComponent(url)}`),
+      axios.get(`http://localhost:${PORT}/api/tech?url=${encodeURIComponent(url)}`)
     ];
 
-    // Get basic page data once
-    const response = await safeGet(url);
-    const $ = cheerio.load(response.data);
+    const resultsArray = await Promise.allSettled(apiCalls);
 
-    // Run quick analyses
-    results.seo = {
-      title: $('title').text() || null,
-      description: $('meta[name="description"]').attr('content') || null,
-      h1: $('h1').first().text() || null
+    const results = {
+        seo: (resultsArray[0].status === 'fulfilled') ? resultsArray[0].value.data : { error: 'SEO Check Failed' },
+        meta: (resultsArray[1].status === 'fulfilled') ? resultsArray[1].value.data : { error: 'Meta Check Failed' },
+        alts: (resultsArray[2].status === 'fulfilled') ? resultsArray[2].value.data : { error: 'Alts Check Failed' },
+        headings: (resultsArray[3].status === 'fulfilled') ? resultsArray[3].value.data : { error: 'Headings Check Failed' },
+        wordcount: (resultsArray[4].status === 'fulfilled') ? resultsArray[4].value.data : { error: 'Word Count Failed' },
+        keywords: (resultsArray[5].status === 'fulfilled') ? resultsArray[5].value.data : { error: 'Keywords Failed' },
+        'links-report': (resultsArray[6].status === 'fulfilled') ? resultsArray[6].value.data : { error: 'Links Report Failed' },
+        'broken-links': (resultsArray[7].status === 'fulfilled') ? resultsArray[7].value.data : { error: 'Broken Links Failed' },
+        sitemap: (resultsArray[8].status === 'fulfilled') ? resultsArray[8].value.data : { error: 'Sitemap Failed' },
+        robots: (resultsArray[9].status === 'fulfilled') ? resultsArray[9].value.data : { error: 'Robots Failed' },
+        pagespeed: (resultsArray[10].status === 'fulfilled') ? resultsArray[10].value.data : { error: 'Page Speed Failed' },
+        tech: (resultsArray[11].status === 'fulfilled') ? resultsArray[11].value.data : { error: 'Tech Stack Failed' }
     };
-
-    results.meta = {
-      metas: Object.fromEntries(
-        $('meta').map((i, el) => [
-          $(el).attr('name') || $(el).attr('property') || `meta${i}`,
-          $(el).attr('content') || null
-        ]).get()
-      )
-    };
-
-    results.alts = {
-      total: $('img').length,
-      missing: $('img:not([alt])').length
-    };
-
-    results.headings = {
-      headings: Object.fromEntries(
-        [1,2,3,4,5,6].map(i => [`h${i}`, $(`h${i}`).length])
-      )
-    };
-
-    const text = $('body').text();
-    const words = text.split(/\s+/).filter(w => w.trim());
-    results.wordcount = {
-      words: words.length,
-      read_time_min: Math.ceil(words.length / 200)
-    };
-
-    results.pagespeed = {
-      load_ms: 0, // Mock value for combined audit
-      size_bytes: Buffer.byteLength(response.data, 'utf8'),
-      resources: $('img, script, link').length
-    };
-
-    results.tech = {
-      tech: {
-        cms: $('meta[name="generator"]').attr('content') || 'Not detected',
-        frameworks: []
-      }
-    };
+    
+    // Clean up status field from nested objects if present
+    Object.keys(results).forEach(key => {
+        if (results[key] && results[key].status) delete results[key].status;
+    });
 
     res.json(results);
   } catch (error) {
     res.json({ 
-      error: 'Failed to complete full audit',
+      error: 'Failed to coordinate full audit',
       details: error.message 
     });
   }
