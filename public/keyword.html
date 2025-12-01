@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Keyword Research Tool — Mini Ubersuggest</title>
+  <style>
+    :root{
+      --brand:#ff5a3c;
+      --bg:#f4f6f8;
+      --card:#fff;
+      --muted:#666;
+      --glass: rgba(0,0,0,0.04);
+    }
+    *{box-sizing:border-box}
+    body{font-family:Inter,ui-sans-serif,system-ui,Arial; margin:0; background:var(--bg); color:#111;}
+    header{background:linear-gradient(90deg,var(--brand),#ff7a5a); color:white; padding:28px 16px; text-align:center}
+    header h1{margin:0;font-size:20px}
+    header p{margin:6px 0 0;opacity:0.95;font-size:13px}
+    .wrap{max-width:1100px;margin:22px auto;padding:0 16px;}
+    .search-card{background:var(--card);padding:18px;border-radius:12px;box-shadow:0 6px 20px var(--glass); display:flex; gap:12px; align-items:center;}
+    .search-box{flex:1;display:flex;gap:8px}
+    input[type="text"]{flex:1;padding:12px 14px;border-radius:8px;border:1px solid #e6e9ee;font-size:15px;}
+    button.primary{background:var(--brand);color:white;padding:10px 16px;border-radius:8px;border:none;cursor:pointer;font-weight:600}
+    button.ghost{background:transparent;border:1px solid #e6e9ee;padding:8px 12px;border-radius:8px;cursor:pointer}
+    .meta{margin-top:12px;color:var(--muted);font-size:13px}
+    .grid{display:grid;grid-template-columns:1fr 360px;gap:16px;margin-top:18px}
+    .panel{background:var(--card);padding:14px;border-radius:10px;box-shadow:0 4px 14px var(--glass);min-height:160px}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+    .tab{background:#f7f8fa;padding:8px 10px;border-radius:8px;border:1px solid #eef1f4;cursor:pointer;font-size:13px}
+    .tab.active{background:var(--brand);color:#fff;border-color:transparent}
+    .ks{display:flex;gap:8px;flex-wrap:wrap}
+    .kcard{background:#fff;padding:10px;border-radius:8px;border:1px solid #f0f0f0;min-width:160px;box-shadow:0 2px 6px rgba(0,0,0,0.03)}
+    .list{margin:0;padding:0;list-style:none}
+    .list li{padding:8px 6px;border-bottom:1px dashed #f2f3f5;font-size:14px}
+    .small{font-size:12px;color:var(--muted)}
+    pre{white-space:pre-wrap;word-wrap:break-word;font-family:inherit;font-size:14px}
+    .serp-item{padding:10px;border-bottom:1px solid #f3f4f6}
+    .sr-title{font-weight:600}
+    .sr-link{font-size:13px;color:#0073e6}
+    .two-col{display:flex;gap:10px}
+    @media (max-width:880px){ .grid{grid-template-columns:1fr; } .search-card{flex-direction:column;align-items:stretch} }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Keyword Research Tool</h1>
+    <p>Ubersuggest-style mini frontend — keyword overview, suggestions, SERP, questions & more</p>
+  </header>
+
+  <div class="wrap">
+    <div class="search-card">
+      <div class="search-box">
+        <input id="kw" type="text" placeholder="কারওrd লিখুন — যেমন: 'photo editor' (English/বাংলা মিলবে)" />
+        <select id="country" style="width:140px;padding:10px;border-radius:8px;border:1px solid #e6e9ee">
+          <option value="global">Global</option>
+          <option value="us">USA</option>
+          <option value="bd">Bangladesh</option>
+        </select>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button class="primary" onclick="doSearch()">Search</button>
+        <button class="ghost" onclick="resetUI()">Reset</button>
+      </div>
+    </div>
+    <div class="meta small">Tip: Backend endpoints expected: <code>/api/keyword/overview</code>, <code>/api/keyword/suggestions</code>, <code>/api/keyword/serp</code>, etc.</div>
+
+    <div class="grid">
+      <div>
+        <div class="panel" id="mainPanel">
+          <div class="tabs" id="tabRow">
+            <div class="tab active" data-tab="overview" onclick="switchTab('overview')">Overview</div>
+            <div class="tab" data-tab="suggestions" onclick="switchTab('suggestions')">Suggestions</div>
+            <div class="tab" data-tab="questions" onclick="switchTab('questions')">Questions</div>
+            <div class="tab" data-tab="serp" onclick="switchTab('serp')">SERP</div>
+            <div class="tab" data-tab="preps" onclick="switchTab('preps')">Prepositions</div>
+            <div class="tab" data-tab="compare" onclick="switchTab('compare')">Compare</div>
+          </div>
+
+          <div id="panelContent">
+            <!-- overview -->
+            <div id="overview" class="tabContent">
+              <h3>Overview</h3>
+              <div id="overviewBox" class="two-col">
+                <div style="flex:1">
+                  <div class="kcard" id="ov-metrics">No data yet</div>
+                </div>
+                <div style="width:260px">
+                  <div class="kcard">
+                    <div class="small">Trend (12 months)</div>
+                    <pre id="ov-trend">—</pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- suggestions -->
+            <div id="suggestions" class="tabContent" style="display:none">
+              <h3>Suggestions</h3>
+              <div id="sugs" class="ks">No data yet</div>
+            </div>
+
+            <!-- questions -->
+            <div id="questions" class="tabContent" style="display:none">
+              <h3>People also ask — Questions</h3>
+              <ul id="qs" class="list"></ul>
+            </div>
+
+            <!-- SERP -->
+            <div id="serp" class="tabContent" style="display:none">
+              <h3>Top SERP Results</h3>
+              <div id="serpList">No data yet</div>
+            </div>
+
+            <!-- preps -->
+            <div id="preps" class="tabContent" style="display:none">
+              <h3>Prepositions</h3>
+              <ul id="prepsList" class="list"></ul>
+            </div>
+
+            <!-- compare -->
+            <div id="compare" class="tabContent" style="display:none">
+              <h3>Compare Keywords</h3>
+              <div style="display:flex;gap:8px;margin-bottom:10px">
+                <input id="cmpKeywords" placeholder="keyword1, keyword2, keyword3" style="flex:1;padding:8px;border-radius:6px;border:1px solid #e6e9ee"/>
+                <button class="primary" onclick="compareKeywords()">Compare</button>
+              </div>
+              <div id="cmpResult">No data yet</div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="panel">
+          <h3>Quick Metrics</h3>
+          <div id="quickMetrics" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+            <div class="kcard" id="qm-volume">Volume: —</div>
+            <div class="kcard" id="qm-diff">Difficulty: —</div>
+            <div class="kcard" id="qm-cpc">CPC: —</div>
+            <div class="kcard" id="qm-comp">Competition: —</div>
+          </div>
+
+          <h3 style="margin-top:18px">Top Suggestions</h3>
+          <div id="sideSugs" style="margin-top:8px"></div>
+
+          <h3 style="margin-top:18px">SERP Snapshot</h3>
+          <div id="sideSerp" style="margin-top:8px"></div>
+        </div>
+
+        <div style="height:16px"></div>
+
+        <div class="panel">
+          <h3>Help</h3>
+          <p class="small">এই UI শুধুমাত্র frontend। backend এ নিচের endpoints থাকা লাগবে:</p>
+          <ul class="small">
+            <li>/api/keyword/overview?keyword=...</li>
+            <li>/api/keyword/suggestions?keyword=...</li>
+            <li>/api/keyword/questions?keyword=...</li>
+            <li>/api/keyword/serp?keyword=...</li>
+            <li>/api/keyword/prepositions?keyword=...</li>
+            <li>/api/keyword/comparisons?keywords=a,b</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Helper to show loading
+    function setLoading(on, msg='Fetching...'){ 
+      const main = document.getElementById('mainPanel');
+      if(on){ main.style.opacity = 0.6; main.style.pointerEvents='none'; } 
+      else { main.style.opacity = 1; main.style.pointerEvents='auto'; }
+    }
+
+    function switchTab(name){
+      document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===name));
+      document.querySelectorAll('.tabContent').forEach(d=>d.style.display='none');
+      const el = document.getElementById(name);
+      if(el) el.style.display='block';
+    }
+
+    async function doSearch(){
+      const kw = document.getElementById('kw').value.trim();
+      if(!kw){ alert('Keyword লিখুন'); return; }
+      setLoading(true);
+      await Promise.all([
+        fetchOverview(kw),
+        fetchSuggestions(kw),
+        fetchQuestions(kw),
+        fetchSERP(kw),
+        fetchPrepositions(kw)
+      ]);
+      setLoading(false);
+      switchTab('overview');
+    }
+
+    function resetUI(){
+      document.getElementById('kw').value='';
+      document.getElementById('overviewBox').innerHTML='No data yet';
+      document.getElementById('ov-trend').innerText='—';
+      document.getElementById('sugs').innerHTML='No data yet';
+      document.getElementById('qs').innerHTML='';
+      document.getElementById('serpList').innerHTML='No data yet';
+      document.getElementById('prepsList').innerHTML='';
+      document.getElementById('quickMetrics').querySelectorAll('.kcard').forEach(k=>k.innerText='—');
+      document.getElementById('sideSugs').innerHTML='';
+      document.getElementById('sideSerp').innerHTML='';
+    }
+
+    // -- API wrappers (change base if needed)
+    const base = ''; // '' = same origin. change to 'https://yourdomain.com' if backend elsewhere.
+
+    async function fetchOverview(keyword){
+      try{
+        const res = await fetch(`${base}/api/keyword/overview?keyword=${encodeURIComponent(keyword)}`);
+        const data = await res.json();
+        // render
+        document.getElementById('ov-metrics').innerHTML = `
+          <div style="font-weight:700">${data.keyword||keyword}</div>
+          <div class="small" style="margin-top:6px">Volume: <b>${data.volume||'—'}</b></div>
+          <div class="small">CPC: <b>${data.cpc||'—'}</b></div>
+          <div class="small">SEO Difficulty: <b>${data.seo_difficulty||'—'}</b></div>
+          <div class="small">Paid Difficulty: <b>${data.paid_difficulty||'—'}</b></div>
+          <div class="small" style="margin-top:8px">${(data.serp && data.serp.length)? data.serp[0].title : ''}</div>
+        `;
+        document.getElementById('ov-trend').innerText = (data.trend||[]).join(', ');
+        // quick metrics
+        document.getElementById('qm-volume').innerText = `Volume: ${data.volume||'—'}`;
+        document.getElementById('qm-diff').innerText = `Difficulty: ${data.seo_difficulty||'—'}`;
+        document.getElementById('qm-cpc').innerText = `CPC: ${data.cpc||'—'}`;
+        document.getElementById('qm-comp').innerText = `Competition: ${data.competition||'—'}`;
+        // side snapshot
+        if(data.serp && data.serp.length){
+          document.getElementById('sideSerp').innerHTML = `<div class="sr-title">${data.serp[0].title}</div><div class="sr-link">${data.serp[0].link}</div>`;
+        }
+      }catch(e){
+        document.getElementById('ov-metrics').innerText = 'Overview fetch failed';
+      }
+    }
+
+    async function fetchSuggestions(keyword){
+      try{
+        const res = await fetch(`${base}/api/keyword/suggestions?keyword=${encodeURIComponent(keyword)}`);
+        const data = await res.json();
+        const container = document.getElementById('sugs');
+        container.innerHTML = '';
+        (data.suggestions || []).forEach(s=>{
+          const el = document.createElement('div');
+          el.className = 'kcard';
+          el.innerHTML = `<div style="font-weight:600">${s.keyword}</div><div class="small">Vol: ${s.volume||'—'} • Diff: ${s.difficulty||'—'}</div>`;
+          container.appendChild(el);
+        });
+        // side suggestions
+        document.getElementById('sideSugs').innerHTML = (data.suggestions||[]).slice(0,6).map(s=>`<div class="small" style="padding:6px 0;border-bottom:1px solid #f5f6f7">${s.keyword}</div>`).join('');
+      }catch(e){
+        document.getElementById('sugs').innerText = 'Suggestions failed';
+      }
+    }
+
+    async function fetchQuestions(keyword){
+      try{
+        const res = await fetch(`${base}/api/keyword/questions?keyword=${encodeURIComponent(keyword)}`);
+        const data = await res.json();
+        const ul = document.getElementById('qs');
+        ul.innerHTML = '';
+        (data.questions || []).forEach(q => {
+          const li = document.createElement('li'); li.innerText = q; ul.appendChild(li);
+        });
+      }catch(e){
+        document.getElementById('qs').innerText = 'Questions fetch failed';
+      }
+    }
+
+    async function fetchSERP(keyword){
+      try{
+        const res = await fetch(`${base}/api/keyword/serp?keyword=${encodeURIComponent(keyword)}`);
+        const data = await res.json();
+        const container = document.getElementById('serpList');
+        container.innerHTML = '';
+        (data.serp || []).forEach(it => {
+          const div = document.createElement('div'); div.className='serp-item';
+          div.innerHTML = `<div class="sr-title">${it.position}. ${it.title}</div><div class="sr-link">${it.link}</div><div class="small">${it.snippet || ''}</div>`;
+          container.appendChild(div);
+        });
+        // also side serp
+        document.getElementById('sideSerp').innerHTML = (data.serp && data.serp.length) ? `<div class="small">${data.serp[0].title}</div><div class="small">${data.serp[0].link}</div>` : '—';
+      }catch(e){
+        document.getElementById('serpList').innerText = 'SERP fetch failed';
+      }
+    }
+
+    async function fetchPrepositions(keyword){
+      try{
+        const res = await fetch(`${base}/api/keyword/prepositions?keyword=${encodeURIComponent(keyword)}`);
+        const data = await res.json();
+        const ul = document.getElementById('prepsList'); ul.innerHTML = '';
+        (data.list || []).forEach(p => { const li=document.createElement('li'); li.innerText=p; ul.appendChild(li); });
+      }catch(e){
+        document.getElementById('prepsList').innerText = 'Prepositions failed';
+      }
+    }
+
+    async function compareKeywords(){
+      const text = document.getElementById('cmpKeywords').value.trim();
+      if(!text){ alert('Enter comma separated keywords'); return; }
+      const res = await fetch(`${base}/api/keyword/comparisons?keywords=${encodeURIComponent(text)}`);
+      const data = await res.json();
+      const el = document.getElementById('cmpResult');
+      if(data.error){ el.innerText = data.error; return; }
+      el.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+    }
+
+    // init
+    resetUI();
+  </script>
+
+</body>
+</html>

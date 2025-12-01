@@ -154,6 +154,10 @@ app.get("/", (req, res) => {
   res.sendFile(__dirname + "/public/index.html");
 });
 
+app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "keyword.html"));
+});
+
 // SEO: title, description, h1
 app.get('/api/seo', async (req, res) => {
   const url = req.query.url;
