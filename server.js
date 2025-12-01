@@ -13,6 +13,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+const path = require('path');
 
 // Serve frontend files (IMPORTANT for Railway)
 app.use(express.static(__dirname));
@@ -145,6 +146,12 @@ async function fetchSERP(keyword) {
 // Basic health
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', ts: new Date().toISOString() });
+});
+
+app.use(express.static("public"));
+
+app.get("/", (req, res) => {
+  res.sendFile(__dirname + "/public/index.html");
 });
 
 // SEO: title, description, h1
