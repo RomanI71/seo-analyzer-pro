@@ -14,6 +14,9 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Serve frontend files (IMPORTANT for Railway)
+app.use(express.static(__dirname));
+
 // ------------ CONFIG ------------
 const PORT = process.env.PORT || 3000;
 const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) SEO-Analyzer-Bot/1.0';
@@ -24,7 +27,6 @@ const PROJECTS = []; // { id, domain, createdAt, settings }
 const RANKS = {};    // { projectId: [{keyword, date, pos, device, country}] }
 const BACKLINKS = {}; // { domain: [{source, target, anchor, createdAt, status}] }
 const SAVED_KEYWORDS = {}; // { projectId: [keywordStrings] }
-
 // simple id generator
 const id = (prefix = '') => prefix + Math.random().toString(36).slice(2, 9);
 
