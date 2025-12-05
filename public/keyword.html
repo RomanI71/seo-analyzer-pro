@@ -1,322 +1,1141 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Keyword Research Tool — Mini Ubersuggest</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Keyword Research Tool - SEO Analyzer Pro</title>
   <style>
-    :root{
-      --brand:#ff5a3c;
-      --bg:#f4f6f8;
-      --card:#fff;
-      --muted:#666;
-      --glass: rgba(0,0,0,0.04);
+    :root {
+      --primary: #1a73e8;
+      --primary-dark: #0d47a1;
+      --secondary: #f8f9fa;
+      --text: #202124;
+      --text-light: #5f6368;
+      --border: #dadce0;
+      --success: #34a853;
+      --warning: #f9ab00;
+      --danger: #ea4335;
+      --card-bg: #ffffff;
+      --sidebar-bg: #f8f9fa;
+      --shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
     }
-    *{box-sizing:border-box}
-    body{font-family:Inter,ui-sans-serif,system-ui,Arial; margin:0; background:var(--bg); color:#111;}
-    header{background:linear-gradient(90deg,var(--brand),#ff7a5a); color:white; padding:28px 16px; text-align:center}
-    header h1{margin:0;font-size:20px}
-    header p{margin:6px 0 0;opacity:0.95;font-size:13px}
-    .wrap{max-width:1100px;margin:22px auto;padding:0 16px;}
-    .search-card{background:var(--card);padding:18px;border-radius:12px;box-shadow:0 6px 20px var(--glass); display:flex; gap:12px; align-items:center;}
-    .search-box{flex:1;display:flex;gap:8px}
-    input[type="text"]{flex:1;padding:12px 14px;border-radius:8px;border:1px solid #e6e9ee;font-size:15px;}
-    button.primary{background:var(--brand);color:white;padding:10px 16px;border-radius:8px;border:none;cursor:pointer;font-weight:600}
-    button.ghost{background:transparent;border:1px solid #e6e9ee;padding:8px 12px;border-radius:8px;cursor:pointer}
-    .meta{margin-top:12px;color:var(--muted);font-size:13px}
-    .grid{display:grid;grid-template-columns:1fr 360px;gap:16px;margin-top:18px}
-    .panel{background:var(--card);padding:14px;border-radius:10px;box-shadow:0 4px 14px var(--glass);min-height:160px}
-    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-    .tab{background:#f7f8fa;padding:8px 10px;border-radius:8px;border:1px solid #eef1f4;cursor:pointer;font-size:13px}
-    .tab.active{background:var(--brand);color:#fff;border-color:transparent}
-    .ks{display:flex;gap:8px;flex-wrap:wrap}
-    .kcard{background:#fff;padding:10px;border-radius:8px;border:1px solid #f0f0f0;min-width:160px;box-shadow:0 2px 6px rgba(0,0,0,0.03)}
-    .list{margin:0;padding:0;list-style:none}
-    .list li{padding:8px 6px;border-bottom:1px dashed #f2f3f5;font-size:14px}
-    .small{font-size:12px;color:var(--muted)}
-    pre{white-space:pre-wrap;word-wrap:break-word;font-family:inherit;font-size:14px}
-    .serp-item{padding:10px;border-bottom:1px solid #f3f4f6}
-    .sr-title{font-weight:600}
-    .sr-link{font-size:13px;color:#0073e6}
-    .two-col{display:flex;gap:10px}
-    @media (max-width:880px){ .grid{grid-template-columns:1fr; } .search-card{flex-direction:column;align-items:stretch} }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    }
+
+    body {
+      background-color: #f5f7fa;
+      color: var(--text);
+      line-height: 1.6;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header h1 {
+      font-size: 2rem;
+      font-weight: 600;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    /* Search Section */
+    .search-section {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: var(--shadow);
+      margin-bottom: 30px;
+      border: 1px solid var(--border);
+    }
+
+    .search-title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: var(--text);
+    }
+
+    .search-container {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .search-input {
+      flex: 1;
+      padding: 16px 20px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: all 0.2s;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.2);
+    }
+
+    /* Buttons */
+    .btn {
+      padding: 14px 28px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, var(--primary-dark), #0a3d91);
+      transform: translateY(-1px);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .btn-outline:hover {
+      background: rgba(0, 0, 0, 0.04);
+    }
+
+    /* Filters */
+    .filters {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .filter-label {
+      font-size: 0.9rem;
+      color: var(--text-light);
+      font-weight: 500;
+    }
+
+    .filter-select {
+      padding: 10px 15px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: white;
+      font-size: 0.95rem;
+      min-width: 180px;
+    }
+
+    /* Results Grid */
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 25px;
+      margin-bottom: 30px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      transition: all 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .card-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, rgba(26, 115, 232, 0.1), rgba(26, 115, 232, 0.2));
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      color: var(--primary);
+    }
+
+    /* Keyword Results Table */
+    .keyword-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    .keyword-table th {
+      text-align: left;
+      padding: 12px;
+      font-weight: 600;
+      color: var(--text-light);
+      border-bottom: 2px solid var(--border);
+      font-size: 0.9rem;
+      background: var(--secondary);
+    }
+
+    .keyword-table td {
+      padding: 14px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .keyword-table tr:hover {
+      background-color: rgba(0, 0, 0, 0.02);
+    }
+
+    /* Status Badges */
+    .badge {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    .badge-success {
+      background-color: rgba(52, 168, 83, 0.1);
+      color: var(--success);
+    }
+
+    .badge-warning {
+      background-color: rgba(249, 171, 0, 0.1);
+      color: var(--warning);
+    }
+
+    .badge-danger {
+      background-color: rgba(234, 67, 53, 0.1);
+      color: var(--danger);
+    }
+
+    .badge-info {
+      background-color: rgba(26, 115, 232, 0.1);
+      color: var(--primary);
+    }
+
+    /* Progress Bars */
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: #eee;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 5px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+
+    .progress-low {
+      background: linear-gradient(to right, #34a853, #5dd97c);
+    }
+
+    .progress-medium {
+      background: linear-gradient(to right, #f9ab00, #fbbc04);
+    }
+
+    .progress-high {
+      background: linear-gradient(to right, #ea4335, #ff6b6b);
+    }
+
+    /* Charts */
+    .chart-container {
+      height: 200px;
+      margin: 20px 0;
+      position: relative;
+    }
+
+    .trend-chart {
+      display: flex;
+      align-items: flex-end;
+      height: 150px;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .bar {
+      flex: 1;
+      background: linear-gradient(to top, var(--primary), #4285f4);
+      border-radius: 4px 4px 0 0;
+      position: relative;
+      transition: height 0.3s ease;
+    }
+
+    .bar:hover {
+      opacity: 0.8;
+    }
+
+    .bar-label {
+      position: absolute;
+      bottom: -25px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--text-light);
+    }
+
+    /* Metrics Cards */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin: 25px 0;
+    }
+
+    .metric-card {
+      text-align: center;
+      padding: 20px;
+      background: var(--secondary);
+      border-radius: 10px;
+      border-left: 4px solid var(--primary);
+    }
+
+    .metric-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 5px;
+    }
+
+    .metric-label {
+      font-size: 0.9rem;
+      color: var(--text-light);
+    }
+
+    /* Loading */
+    .loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px;
+      gap: 20px;
+      text-align: center;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-left-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Export Section */
+    .export-section {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: var(--shadow);
+      margin-top: 30px;
+      border: 1px solid var(--border);
+    }
+
+    .export-options {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      margin-top: 15px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .results-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .search-container {
+        flex-direction: column;
+      }
+      
+      .filters {
+        flex-direction: column;
+      }
+      
+      .filter-select {
+        width: 100%;
+      }
+      
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+      }
+      
+      .header-actions {
+        width: 100%;
+        justify-content: space-between;
+      }
+    }
   </style>
 </head>
 <body>
-
-  <header>
-    <h1>Keyword Research Tool</h1>
-    <p>Ubersuggest-style mini frontend — keyword overview, suggestions, SERP, questions & more</p>
-  </header>
-
-  <div class="wrap">
-    <div class="search-card">
-      <div class="search-box">
-        <input id="kw" type="text" placeholder="কারওrd লিখুন — যেমন: 'photo editor' (English/বাংলা মিলবে)" />
-        <select id="country" style="width:140px;padding:10px;border-radius:8px;border:1px solid #e6e9ee">
-          <option value="global">Global</option>
-          <option value="us">USA</option>
-          <option value="bd">Bangladesh</option>
-        </select>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        <button class="primary" onclick="doSearch()">Search</button>
-        <button class="ghost" onclick="resetUI()">Reset</button>
-      </div>
-    </div>
-    <div class="meta small">Tip: Backend endpoints expected: <code>/api/keyword/overview</code>, <code>/api/keyword/suggestions</code>, <code>/api/keyword/serp</code>, etc.</div>
-
-    <div class="grid">
-      <div>
-        <div class="panel" id="mainPanel">
-          <div class="tabs" id="tabRow">
-            <div class="tab active" data-tab="overview" onclick="switchTab('overview')">Overview</div>
-            <div class="tab" data-tab="suggestions" onclick="switchTab('suggestions')">Suggestions</div>
-            <div class="tab" data-tab="questions" onclick="switchTab('questions')">Questions</div>
-            <div class="tab" data-tab="serp" onclick="switchTab('serp')">SERP</div>
-            <div class="tab" data-tab="preps" onclick="switchTab('preps')">Prepositions</div>
-            <div class="tab" data-tab="compare" onclick="switchTab('compare')">Compare</div>
-          </div>
-
-          <div id="panelContent">
-            <!-- overview -->
-            <div id="overview" class="tabContent">
-              <h3>Overview</h3>
-              <div id="overviewBox" class="two-col">
-                <div style="flex:1">
-                  <div class="kcard" id="ov-metrics">No data yet</div>
-                </div>
-                <div style="width:260px">
-                  <div class="kcard">
-                    <div class="small">Trend (12 months)</div>
-                    <pre id="ov-trend">—</pre>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- suggestions -->
-            <div id="suggestions" class="tabContent" style="display:none">
-              <h3>Suggestions</h3>
-              <div id="sugs" class="ks">No data yet</div>
-            </div>
-
-            <!-- questions -->
-            <div id="questions" class="tabContent" style="display:none">
-              <h3>People also ask — Questions</h3>
-              <ul id="qs" class="list"></ul>
-            </div>
-
-            <!-- SERP -->
-            <div id="serp" class="tabContent" style="display:none">
-              <h3>Top SERP Results</h3>
-              <div id="serpList">No data yet</div>
-            </div>
-
-            <!-- preps -->
-            <div id="preps" class="tabContent" style="display:none">
-              <h3>Prepositions</h3>
-              <ul id="prepsList" class="list"></ul>
-            </div>
-
-            <!-- compare -->
-            <div id="compare" class="tabContent" style="display:none">
-              <h3>Compare Keywords</h3>
-              <div style="display:flex;gap:8px;margin-bottom:10px">
-                <input id="cmpKeywords" placeholder="keyword1, keyword2, keyword3" style="flex:1;padding:8px;border-radius:6px;border:1px solid #e6e9ee"/>
-                <button class="primary" onclick="compareKeywords()">Compare</button>
-              </div>
-              <div id="cmpResult">No data yet</div>
-            </div>
-
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <div class="panel">
-          <h3>Quick Metrics</h3>
-          <div id="quickMetrics" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
-            <div class="kcard" id="qm-volume">Volume: —</div>
-            <div class="kcard" id="qm-diff">Difficulty: —</div>
-            <div class="kcard" id="qm-cpc">CPC: —</div>
-            <div class="kcard" id="qm-comp">Competition: —</div>
-          </div>
-
-          <h3 style="margin-top:18px">Top Suggestions</h3>
-          <div id="sideSugs" style="margin-top:8px"></div>
-
-          <h3 style="margin-top:18px">SERP Snapshot</h3>
-          <div id="sideSerp" style="margin-top:8px"></div>
-        </div>
-
-        <div style="height:16px"></div>
-
-        <div class="panel">
-          <h3>Help</h3>
-          <p class="small">এই UI শুধুমাত্র frontend। backend এ নিচের endpoints থাকা লাগবে:</p>
-          <ul class="small">
-            <li>/api/keyword/overview?keyword=...</li>
-            <li>/api/keyword/suggestions?keyword=...</li>
-            <li>/api/keyword/questions?keyword=...</li>
-            <li>/api/keyword/serp?keyword=...</li>
-            <li>/api/keyword/prepositions?keyword=...</li>
-            <li>/api/keyword/comparisons?keywords=a,b</li>
-          </ul>
-        </div>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>
+        <span style="background: linear-gradient(135deg, var(--primary), var(--primary-dark)); 
+                     width: 40px; height: 40px; border-radius: 8px; display: inline-flex; 
+                     align-items: center; justify-content: center; color: white;">K</span>
+        Keyword Research Tool
+      </h1>
+      <div class="header-actions">
+        <button class="btn btn-outline" onclick="clearAll()">
+          <span>🗑️</span>
+          Clear All
+        </button>
+        <button class="btn btn-primary" onclick="exportAllData()">
+          <span>📥</span>
+          Export All Data
+        </button>
       </div>
     </div>
+
+    <!-- Search Section -->
+    <div class="search-section">
+      <h2 class="search-title">Find Keywords & Analyze Competition</h2>
+      <div class="search-container">
+        <input type="text" id="keywordInput" class="search-input" 
+               placeholder="Enter seed keyword (e.g., 'SEO tools', 'digital marketing', 'website optimization')" 
+               value="SEO tools">
+        <button class="btn btn-primary" onclick="searchKeywords()">
+          <span>🔍</span>
+          Search Keywords
+        </button>
+      </div>
+      
+      <!-- Filters -->
+      <div class="filters">
+        <div class="filter-group">
+          <label class="filter-label">Search Volume</label>
+          <select class="filter-select" id="volumeFilter">
+            <option value="all">All Volumes</option>
+            <option value="high">High (10K+)</option>
+            <option value="medium">Medium (1K-10K)</option>
+            <option value="low">Low (&lt;1K)</option>
+          </select>
+        </div>
+        
+        <div class="filter-group">
+          <label class="filter-label">Keyword Difficulty</label>
+          <select class="filter-select" id="difficultyFilter">
+            <option value="all">All Difficulties</option>
+            <option value="easy">Easy (0-30)</option>
+            <option value="medium">Medium (31-70)</option>
+            <option value="hard">Hard (71-100)</option>
+          </select>
+        </div>
+        
+        <div class="filter-group">
+          <label class="filter-label">Sort By</label>
+          <select class="filter-select" id="sortFilter">
+            <option value="volume">Search Volume</option>
+            <option value="difficulty">Keyword Difficulty</option>
+            <option value="cpc">CPC</option>
+            <option value="competition">Competition</option>
+          </select>
+        </div>
+        
+        <div class="filter-group">
+          <label class="filter-label">Country</label>
+          <select class="filter-select" id="countryFilter">
+            <option value="us">United States</option>
+            <option value="uk">United Kingdom</option>
+            <option value="ca">Canada</option>
+            <option value="au">Australia</option>
+            <option value="in">India</option>
+            <option value="de">Germany</option>
+          </select>
+        </div>
+      </div>
+      
+      <button class="btn btn-outline" onclick="applyFilters()">
+        <span>⚙️</span>
+        Apply Filters
+      </button>
+    </div>
+
+    <!-- Results Section -->
+    <div id="resultsSection">
+      <div class="results-grid">
+        
+        <!-- Keyword Ideas Card -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="card-icon">💡</div>
+              Keyword Ideas
+            </div>
+            <span class="badge badge-info">142 keywords</span>
+          </div>
+          
+          <table class="keyword-table">
+            <thead>
+              <tr>
+                <th>Keyword</th>
+                <th>Volume</th>
+                <th>Difficulty</th>
+                <th>CPC</th>
+              </tr>
+            </thead>
+            <tbody id="keywordTable">
+              <!-- Keywords will be loaded here -->
+            </tbody>
+          </table>
+          
+          <div style="margin-top: 20px; text-align: center;">
+            <button class="btn btn-outline" onclick="loadMoreKeywords()">
+              <span>📖</span>
+              Load More Keywords
+            </button>
+          </div>
+        </div>
+
+        <!-- Trends & Analysis Card -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="card-icon">📈</div>
+              Trends & Analysis
+            </div>
+            <span class="badge badge-success">Growing</span>
+          </div>
+          
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <div class="metric-value" id="avgVolume">14.8K</div>
+              <div class="metric-label">Avg. Monthly Volume</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-value" id="avgCPC">$3.45</div>
+              <div class="metric-label">Avg. CPC</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-value" id="avgDifficulty">58</div>
+              <div class="metric-label">Avg. Difficulty</div>
+            </div>
+          </div>
+          
+          <div class="chart-container">
+            <h4 style="margin-bottom: 15px;">Monthly Search Trend</h4>
+            <div class="trend-chart" id="trendChart">
+              <!-- Trend bars will be generated here -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Competition Analysis Card -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="card-icon">🏆</div>
+              Competition Analysis
+            </div>
+            <span class="badge badge-warning">Medium Competition</span>
+          </div>
+          
+          <div style="margin: 20px 0;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+              <span>Competition Level</span>
+              <span>65/100</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill progress-medium" style="width: 65%;"></div>
+            </div>
+          </div>
+          
+          <table class="keyword-table">
+            <thead>
+              <tr>
+                <th>Competitor</th>
+                <th>Authority</th>
+                <th>Backlinks</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>moz.com</td>
+                <td>91</td>
+                <td>1.2M</td>
+              </tr>
+              <tr>
+                <td>ahrefs.com</td>
+                <td>88</td>
+                <td>890K</td>
+              </tr>
+              <tr>
+                <td>semrush.com</td>
+                <td>86</td>
+                <td>760K</td>
+              </tr>
+              <tr>
+                <td>ubersuggest.com</td>
+                <td>72</td>
+                <td>320K</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Long Tail Keywords Card -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="card-icon">🎯</div>
+              Long Tail Keywords
+            </div>
+            <span class="badge badge-success">Low Competition</span>
+          </div>
+          
+          <p style="margin-bottom: 15px; color: var(--text-light);">
+            High-conversion keywords with lower competition
+          </p>
+          
+          <table class="keyword-table">
+            <thead>
+              <tr>
+                <th>Keyword</th>
+                <th>Volume</th>
+                <th>Difficulty</th>
+              </tr>
+            </thead>
+            <tbody id="longTailTable">
+              <!-- Long tail keywords will be loaded here -->
+            </tbody>
+          </table>
+          
+          <div style="margin-top: 20px;">
+            <button class="btn btn-outline" onclick="generateMoreLongTail()" style="width: 100%;">
+              <span>✨</span>
+              Generate More Long Tail Keywords
+            </button>
+          </div>
+        </div>
+
+        <!-- Question Keywords Card -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="card-icon">❓</div>
+              Question Keywords
+            </div>
+            <span class="badge badge-info">Voice Search</span>
+          </div>
+          
+          <div style="margin: 15px 0;">
+            <input type="text" class="search-input" id="questionInput" placeholder="Type a question..." 
+                   style="width: 100%; margin-bottom: 10px;">
+            <button class="btn btn-outline" onclick="findQuestionKeywords()" style="width: 100%;">
+              <span>🤔</span>
+              Find Related Questions
+            </button>
+          </div>
+          
+          <div id="questionKeywords" style="max-height: 200px; overflow-y: auto;">
+            <!-- Question keywords will appear here -->
+          </div>
+        </div>
+
+        <!-- Keyword Clustering Card -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="card-icon">🔗</div>
+              Keyword Clustering
+            </div>
+            <span class="badge badge-info">5 clusters found</span>
+          </div>
+          
+          <div id="keywordClusters" style="margin-top: 15px;">
+            <!-- Clusters will be generated here -->
+          </div>
+          
+          <div style="margin-top: 20px;">
+            <button class="btn btn-primary" onclick="clusterKeywords()" style="width: 100%;">
+              <span>🧩</span>
+              Cluster Keywords by Intent
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Export Section -->
+    <div class="export-section">
+      <h3 style="margin-bottom: 15px;">Export Keyword Research Data</h3>
+      <div class="export-options">
+        <button class="btn btn-outline" onclick="exportCSV()">
+          <span>📊</span>
+          Export as CSV
+        </button>
+        <button class="btn btn-outline" onclick="exportExcel()">
+          <span>📈</span>
+          Export as Excel
+        </button>
+        <button class="btn btn-outline" onclick="exportPDF()">
+          <span>📄</span>
+          Export as PDF Report
+        </button>
+        <button class="btn btn-outline" onclick="copyToClipboard()">
+          <span>📋</span>
+          Copy to Clipboard
+        </button>
+      </div>
+    </div>
+
   </div>
 
   <script>
-    // Helper to show loading
-    function setLoading(on, msg='Fetching...'){ 
-      const main = document.getElementById('mainPanel');
-      if(on){ main.style.opacity = 0.6; main.style.pointerEvents='none'; } 
-      else { main.style.opacity = 1; main.style.pointerEvents='auto'; }
-    }
+    // Sample keyword data
+    const keywordData = [
+      { keyword: "seo tools", volume: 14800, difficulty: 72, cpc: 3.45, competition: 0.85 },
+      { keyword: "best seo tools", volume: 5400, difficulty: 68, cpc: 4.20, competition: 0.78 },
+      { keyword: "free seo tools", volume: 2900, difficulty: 52, cpc: 2.85, competition: 0.65 },
+      { keyword: "seo software", volume: 8800, difficulty: 75, cpc: 5.10, competition: 0.82 },
+      { keyword: "keyword research tools", volume: 3200, difficulty: 58, cpc: 3.75, competition: 0.70 },
+      { keyword: "google seo tools", volume: 2100, difficulty: 65, cpc: 3.90, competition: 0.75 },
+      { keyword: "seo analysis tools", volume: 1200, difficulty: 48, cpc: 2.95, competition: 0.60 },
+      { keyword: "website seo checker", volume: 1800, difficulty: 55, cpc: 3.25, competition: 0.68 },
+      { keyword: "seo audit tools", volume: 950, difficulty: 42, cpc: 2.50, competition: 0.55 },
+      { keyword: "on page seo tools", volume: 1600, difficulty: 53, cpc: 3.15, competition: 0.63 }
+    ];
 
-    function switchTab(name){
-      document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===name));
-      document.querySelectorAll('.tabContent').forEach(d=>d.style.display='none');
-      const el = document.getElementById(name);
-      if(el) el.style.display='block';
-    }
+    const longTailKeywords = [
+      { keyword: "best free seo tools for small business", volume: 480, difficulty: 32, cpc: 1.85 },
+      { keyword: "how to use seo tools for beginners", volume: 320, difficulty: 28, cpc: 1.45 },
+      { keyword: "seo tools comparison 2024", volume: 210, difficulty: 35, cpc: 2.10 },
+      { keyword: "affordable seo tools for bloggers", volume: 180, difficulty: 25, cpc: 1.25 },
+      { keyword: "mobile seo optimization tools", volume: 290, difficulty: 38, cpc: 2.35 },
+      { keyword: "local seo tools for small business", volume: 420, difficulty: 41, cpc: 2.65 }
+    ];
 
-    async function doSearch(){
-      const kw = document.getElementById('kw').value.trim();
-      if(!kw){ alert('Keyword লিখুন'); return; }
-      setLoading(true);
-      await Promise.all([
-        fetchOverview(kw),
-        fetchSuggestions(kw),
-        fetchQuestions(kw),
-        fetchSERP(kw),
-        fetchPrepositions(kw)
-      ]);
-      setLoading(false);
-      switchTab('overview');
-    }
+    const questionKeywords = [
+      "What are the best SEO tools?",
+      "How to choose SEO tools?",
+      "Are free SEO tools effective?",
+      "Which SEO tool is best for beginners?",
+      "How much do SEO tools cost?",
+      "What is the difference between SEO tools?",
+      "Can SEO tools improve rankings?",
+      "How to use SEO tools effectively?"
+    ];
 
-    function resetUI(){
-      document.getElementById('kw').value='';
-      document.getElementById('overviewBox').innerHTML='No data yet';
-      document.getElementById('ov-trend').innerText='—';
-      document.getElementById('sugs').innerHTML='No data yet';
-      document.getElementById('qs').innerHTML='';
-      document.getElementById('serpList').innerHTML='No data yet';
-      document.getElementById('prepsList').innerHTML='';
-      document.getElementById('quickMetrics').querySelectorAll('.kcard').forEach(k=>k.innerText='—');
-      document.getElementById('sideSugs').innerHTML='';
-      document.getElementById('sideSerp').innerHTML='';
-    }
+    // Trend data for chart
+    const trendData = [
+      { month: "Jan", value: 12000 },
+      { month: "Feb", value: 13500 },
+      { month: "Mar", value: 14200 },
+      { month: "Apr", value: 14800 },
+      { month: "May", value: 15500 },
+      { month: "Jun", value: 16200 }
+    ];
 
-    // -- API wrappers (change base if needed)
-    const base = ''; // '' = same origin. change to 'https://yourdomain.com' if backend elsewhere.
+    // Initialize the page
+    document.addEventListener('DOMContentLoaded', function() {
+      loadKeywordTable();
+      loadLongTailTable();
+      loadQuestionKeywords();
+      generateTrendChart();
+      generateClusters();
+      updateMetrics();
+    });
 
-    async function fetchOverview(keyword){
-      try{
-        const res = await fetch(`${base}/api/keyword/overview?keyword=${encodeURIComponent(keyword)}`);
-        const data = await res.json();
-        // render
-        document.getElementById('ov-metrics').innerHTML = `
-          <div style="font-weight:700">${data.keyword||keyword}</div>
-          <div class="small" style="margin-top:6px">Volume: <b>${data.volume||'—'}</b></div>
-          <div class="small">CPC: <b>${data.cpc||'—'}</b></div>
-          <div class="small">SEO Difficulty: <b>${data.seo_difficulty||'—'}</b></div>
-          <div class="small">Paid Difficulty: <b>${data.paid_difficulty||'—'}</b></div>
-          <div class="small" style="margin-top:8px">${(data.serp && data.serp.length)? data.serp[0].title : ''}</div>
+    // Load keyword table
+    function loadKeywordTable() {
+      const tableBody = document.getElementById('keywordTable');
+      tableBody.innerHTML = '';
+      
+      keywordData.forEach(keyword => {
+        const difficultyClass = keyword.difficulty < 40 ? 'badge-success' : 
+                               keyword.difficulty < 70 ? 'badge-warning' : 'badge-danger';
+        const difficultyText = keyword.difficulty < 40 ? 'Easy' : 
+                              keyword.difficulty < 70 ? 'Medium' : 'Hard';
+        
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td style="font-weight: 500;">${keyword.keyword}</td>
+          <td>${keyword.volume.toLocaleString()}</td>
+          <td>
+            <span class="badge ${difficultyClass}">${difficultyText} (${keyword.difficulty})</span>
+            <div class="progress-bar">
+              <div class="progress-fill ${keyword.difficulty < 40 ? 'progress-low' : 
+                                      keyword.difficulty < 70 ? 'progress-medium' : 'progress-high'}" 
+                   style="width: ${keyword.difficulty}%"></div>
+            </div>
+          </td>
+          <td>$${keyword.cpc.toFixed(2)}</td>
         `;
-        document.getElementById('ov-trend').innerText = (data.trend||[]).join(', ');
-        // quick metrics
-        document.getElementById('qm-volume').innerText = `Volume: ${data.volume||'—'}`;
-        document.getElementById('qm-diff').innerText = `Difficulty: ${data.seo_difficulty||'—'}`;
-        document.getElementById('qm-cpc').innerText = `CPC: ${data.cpc||'—'}`;
-        document.getElementById('qm-comp').innerText = `Competition: ${data.competition||'—'}`;
-        // side snapshot
-        if(data.serp && data.serp.length){
-          document.getElementById('sideSerp').innerHTML = `<div class="sr-title">${data.serp[0].title}</div><div class="sr-link">${data.serp[0].link}</div>`;
-        }
-      }catch(e){
-        document.getElementById('ov-metrics').innerText = 'Overview fetch failed';
+        tableBody.appendChild(row);
+      });
+    }
+
+    // Load long tail keywords
+    function loadLongTailTable() {
+      const tableBody = document.getElementById('longTailTable');
+      tableBody.innerHTML = '';
+      
+      longTailKeywords.forEach(keyword => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${keyword.keyword}</td>
+          <td>${keyword.volume.toLocaleString()}</td>
+          <td>
+            <span class="badge badge-success">Low (${keyword.difficulty})</span>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    // Load question keywords
+    function loadQuestionKeywords() {
+      const container = document.getElementById('questionKeywords');
+      container.innerHTML = '';
+      
+      questionKeywords.forEach(question => {
+        const div = document.createElement('div');
+        div.style.cssText = `
+          padding: 10px;
+          margin-bottom: 8px;
+          background: var(--secondary);
+          border-radius: 6px;
+          border-left: 3px solid var(--primary);
+          cursor: pointer;
+          transition: all 0.2s;
+        `;
+        div.innerHTML = `
+          <div style="font-weight: 500; margin-bottom: 4px;">${question}</div>
+          <div style="font-size: 0.8rem; color: var(--text-light);">
+            <span style="margin-right: 15px;">📈 320 searches/mo</span>
+            <span>💰 $1.25 CPC</span>
+          </div>
+        `;
+        
+        div.onclick = function() {
+          document.getElementById('questionInput').value = question;
+          findQuestionKeywords();
+        };
+        
+        container.appendChild(div);
+      });
+    }
+
+    // Generate trend chart
+    function generateTrendChart() {
+      const chart = document.getElementById('trendChart');
+      chart.innerHTML = '';
+      
+      const maxValue = Math.max(...trendData.map(d => d.value));
+      
+      trendData.forEach(data => {
+        const barHeight = (data.value / maxValue) * 100;
+        const bar = document.createElement('div');
+        bar.className = 'bar';
+        bar.style.height = barHeight + '%';
+        bar.title = `${data.month}: ${data.value.toLocaleString()} searches`;
+        
+        const label = document.createElement('div');
+        label.className = 'bar-label';
+        label.textContent = data.month;
+        
+        bar.appendChild(label);
+        chart.appendChild(bar);
+      });
+    }
+
+    // Generate keyword clusters
+    function generateClusters() {
+      const clusters = [
+        { name: "Tool Types", keywords: ["free tools", "paid tools", "all-in-one", "specialized"] },
+        { name: "User Intent", keywords: ["for beginners", "for experts", "for small business", "for enterprise"] },
+        { name: "Features", keywords: ["keyword research", "backlink analysis", "rank tracking", "site audit"] },
+        { name: "Platform", keywords: ["web-based", "desktop", "chrome extension", "mobile app"] },
+        { name: "Pricing", keywords: ["free trial", "monthly subscription", "yearly plan", "freemium"] }
+      ];
+      
+      const container = document.getElementById('keywordClusters');
+      container.innerHTML = '';
+      
+      clusters.forEach(cluster => {
+        const clusterDiv = document.createElement('div');
+        clusterDiv.style.cssText = `
+          margin-bottom: 15px;
+          padding: 12px;
+          background: linear-gradient(135deg, rgba(26,115,232,0.05), rgba(26,115,232,0.1));
+          border-radius: 8px;
+          border-left: 4px solid var(--primary);
+        `;
+        
+        const keywordsHtml = cluster.keywords.map(kw => 
+          `<span style="display: inline-block; padding: 4px 8px; margin: 3px; 
+                       background: white; border-radius: 4px; font-size: 0.85rem;">${kw}</span>`
+        ).join('');
+        
+        clusterDiv.innerHTML = `
+          <div style="font-weight: 600; margin-bottom: 8px; color: var(--primary);">${cluster.name}</div>
+          <div>${keywordsHtml}</div>
+        `;
+        
+        container.appendChild(clusterDiv);
+      });
+    }
+
+    // Update metrics
+    function updateMetrics() {
+      const avgVolume = keywordData.reduce((sum, kw) => sum + kw.volume, 0) / keywordData.length;
+      const avgCPC = keywordData.reduce((sum, kw) => sum + kw.cpc, 0) / keywordData.length;
+      const avgDifficulty = keywordData.reduce((sum, kw) => sum + kw.difficulty, 0) / keywordData.length;
+      
+      document.getElementById('avgVolume').textContent = Math.round(avgVolume).toLocaleString();
+      document.getElementById('avgCPC').textContent = '$' + avgCPC.toFixed(2);
+      document.getElementById('avgDifficulty').textContent = Math.round(avgDifficulty);
+    }
+
+    // Search keywords function
+    function searchKeywords() {
+      const keyword = document.getElementById('keywordInput').value.trim();
+      if (!keyword) {
+        alert('Please enter a keyword to search');
+        return;
+      }
+      
+      document.getElementById('resultsSection').innerHTML = `
+        <div class="loading">
+          <div class="spinner"></div>
+          <h3>Searching for "${keyword}"...</h3>
+          <p>Analyzing search volume, competition, and trends...</p>
+        </div>
+      `;
+      
+      // Simulate API call
+      setTimeout(() => {
+        location.reload(); // In real app, this would load new data
+      }, 1500);
+    }
+
+    // Apply filters
+    function applyFilters() {
+      const volumeFilter = document.getElementById('volumeFilter').value;
+      const difficultyFilter = document.getElementById('difficultyFilter').value;
+      const sortFilter = document.getElementById('sortFilter').value;
+      
+      alert(`Applying filters:
+        • Volume: ${volumeFilter}
+        • Difficulty: ${difficultyFilter}
+        • Sort by: ${sortFilter}
+      `);
+      
+      // In real app, this would filter and sort the data
+    }
+
+    // Load more keywords
+    function loadMoreKeywords() {
+      const moreKeywords = [
+        { keyword: "seo rank tracker", volume: 850, difficulty: 46, cpc: 2.85 },
+        { keyword: "backlink checker tool", volume: 1200, difficulty: 52, cpc: 3.25 },
+        { keyword: "website speed test tool", volume: 1900, difficulty: 44, cpc: 2.65 }
+      ];
+      
+      const tableBody = document.getElementById('keywordTable');
+      moreKeywords.forEach(keyword => {
+        const difficultyClass = keyword.difficulty < 40 ? 'badge-success' : 
+                               keyword.difficulty < 70 ? 'badge-warning' : 'badge-danger';
+        const difficultyText = keyword.difficulty < 40 ? 'Easy' : 
+                              keyword.difficulty < 70 ? 'Medium' : 'Hard';
+        
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td style="font-weight: 500;">${keyword.keyword}</td>
+          <td>${keyword.volume.toLocaleString()}</td>
+          <td>
+            <span class="badge ${difficultyClass}">${difficultyText} (${keyword.difficulty})</span>
+            <div class="progress-bar">
+              <div class="progress-fill ${keyword.difficulty < 40 ? 'progress-low' : 
+                                      keyword.difficulty < 70 ? 'progress-medium' : 'progress-high'}" 
+                   style="width: ${keyword.difficulty}%"></div>
+            </div>
+          </td>
+          <td>$${keyword.cpc.toFixed(2)}</td>
+        `;
+        tableBody.appendChild(row);
+      });
+      
+      alert('3 more keywords loaded!');
+    }
+
+    // Generate more long tail keywords
+    function generateMoreLongTail() {
+      const newKeywords = [
+        { keyword: "best seo tools for ecommerce websites 2024", volume: 180, difficulty: 29 },
+        { keyword: "free google analytics alternative tools", volume: 240, difficulty: 31 },
+        { keyword: "how to improve website seo without tools", volume: 150, difficulty: 26 }
+      ];
+      
+      const tableBody = document.getElementById('longTailTable');
+      newKeywords.forEach(keyword => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${keyword.keyword}</td>
+          <td>${keyword.volume.toLocaleString()}</td>
+          <td>
+            <span class="badge badge-success">Low (${keyword.difficulty})</span>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+      
+      alert('Generated 3 new long tail keywords!');
+    }
+
+    // Find question keywords
+    function findQuestionKeywords() {
+      const question = document.getElementById('questionInput').value.trim();
+      if (!question) {
+        alert('Please enter a question');
+        return;
+      }
+      
+      const newQuestions = [
+        `${question} for beginners`,
+        `How to use ${question}`,
+        `Best practices for ${question}`,
+        `${question} vs alternatives`,
+        `Cost of ${question}`
+      ];
+      
+      const container = document.getElementById('questionKeywords');
+      container.innerHTML = '<h4 style="margin-bottom: 10px;">Related Questions:</h4>';
+      
+      newQuestions.forEach((q, index) => {
+        const div = document.createElement('div');
+        div.style.cssText = `
+          padding: 10px;
+          margin-bottom: 8px;
+          background: ${index % 2 === 0 ? 'white' : 'var(--secondary)'};
+          border-radius: 6px;
+          border-left: 3px solid ${index % 2 === 0 ? 'var(--primary)' : 'var(--success)'};
+        `;
+        div.textContent = q;
+        container.appendChild(div);
+      });
+    }
+
+    // Cluster keywords
+    function clusterKeywords() {
+      alert('Clustering keywords by search intent and topic...');
+      // In real app, this would run clustering algorithm
+    }
+
+    // Clear all
+    function clearAll() {
+      if (confirm('Are you sure you want to clear all keyword research data?')) {
+        document.getElementById('keywordInput').value = '';
+        document.getElementById('questionInput').value = '';
+        alert('All data cleared. Ready for new research!');
       }
     }
 
-    async function fetchSuggestions(keyword){
-      try{
-        const res = await fetch(`${base}/api/keyword/suggestions?keyword=${encodeURIComponent(keyword)}`);
-        const data = await res.json();
-        const container = document.getElementById('sugs');
-        container.innerHTML = '';
-        (data.suggestions || []).forEach(s=>{
-          const el = document.createElement('div');
-          el.className = 'kcard';
-          el.innerHTML = `<div style="font-weight:600">${s.keyword}</div><div class="small">Vol: ${s.volume||'—'} • Diff: ${s.difficulty||'—'}</div>`;
-          container.appendChild(el);
-        });
-        // side suggestions
-        document.getElementById('sideSugs').innerHTML = (data.suggestions||[]).slice(0,6).map(s=>`<div class="small" style="padding:6px 0;border-bottom:1px solid #f5f6f7">${s.keyword}</div>`).join('');
-      }catch(e){
-        document.getElementById('sugs').innerText = 'Suggestions failed';
+    // Export functions
+    function exportAllData() {
+      alert('Exporting all keyword research data...');
+      // In real app, this would generate comprehensive export
+    }
+
+    function exportCSV() {
+      alert('Exporting data as CSV file...');
+      // In real app, this would generate CSV
+    }
+
+    function exportExcel() {
+      alert('Exporting data as Excel file...');
+      // In real app, this would generate Excel
+    }
+
+    function exportPDF() {
+      alert('Generating PDF report...');
+      // In real app, this would generate PDF
+    }
+
+    function copyToClipboard() {
+      const keywordList = keywordData.map(k => `${k.keyword}: ${k.volume} searches/mo`).join('\n');
+      navigator.clipboard.writeText(keywordList)
+        .then(() => alert('Keyword list copied to clipboard!'))
+        .catch(() => alert('Failed to copy to clipboard'));
+    }
+
+    // Keyboard shortcut
+    document.getElementById('keywordInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        searchKeywords();
       }
-    }
-
-    async function fetchQuestions(keyword){
-      try{
-        const res = await fetch(`${base}/api/keyword/questions?keyword=${encodeURIComponent(keyword)}`);
-        const data = await res.json();
-        const ul = document.getElementById('qs');
-        ul.innerHTML = '';
-        (data.questions || []).forEach(q => {
-          const li = document.createElement('li'); li.innerText = q; ul.appendChild(li);
-        });
-      }catch(e){
-        document.getElementById('qs').innerText = 'Questions fetch failed';
-      }
-    }
-
-    async function fetchSERP(keyword){
-      try{
-        const res = await fetch(`${base}/api/keyword/serp?keyword=${encodeURIComponent(keyword)}`);
-        const data = await res.json();
-        const container = document.getElementById('serpList');
-        container.innerHTML = '';
-        (data.serp || []).forEach(it => {
-          const div = document.createElement('div'); div.className='serp-item';
-          div.innerHTML = `<div class="sr-title">${it.position}. ${it.title}</div><div class="sr-link">${it.link}</div><div class="small">${it.snippet || ''}</div>`;
-          container.appendChild(div);
-        });
-        // also side serp
-        document.getElementById('sideSerp').innerHTML = (data.serp && data.serp.length) ? `<div class="small">${data.serp[0].title}</div><div class="small">${data.serp[0].link}</div>` : '—';
-      }catch(e){
-        document.getElementById('serpList').innerText = 'SERP fetch failed';
-      }
-    }
-
-    async function fetchPrepositions(keyword){
-      try{
-        const res = await fetch(`${base}/api/keyword/prepositions?keyword=${encodeURIComponent(keyword)}`);
-        const data = await res.json();
-        const ul = document.getElementById('prepsList'); ul.innerHTML = '';
-        (data.list || []).forEach(p => { const li=document.createElement('li'); li.innerText=p; ul.appendChild(li); });
-      }catch(e){
-        document.getElementById('prepsList').innerText = 'Prepositions failed';
-      }
-    }
-
-    async function compareKeywords(){
-      const text = document.getElementById('cmpKeywords').value.trim();
-      if(!text){ alert('Enter comma separated keywords'); return; }
-      const res = await fetch(`${base}/api/keyword/comparisons?keywords=${encodeURIComponent(text)}`);
-      const data = await res.json();
-      const el = document.getElementById('cmpResult');
-      if(data.error){ el.innerText = data.error; return; }
-      el.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
-    }
-
-    // init
-    resetUI();
+    });
   </script>
-
 </body>
 </html>
