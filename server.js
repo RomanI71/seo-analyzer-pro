@@ -17,6 +17,7 @@ const path = require('path');
 
 // Serve frontend files (IMPORTANT for Railway)
 app.use(express.static(__dirname));
+app.use(express.static("public"));
 
 // ------------ CONFIG ------------
 const PORT = process.env.PORT || 3000;
@@ -141,21 +142,20 @@ async function fetchSERP(keyword) {
   }));
 }
 
-// ------------ Existing Audit Endpoints (improved & included) ------------
+// ------------ Basic routes ------------
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/public/index.html');
+});
+
+app.get('/keyword', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'keyword.html'));
+});
+
+// ------------ API Endpoints ------------
 
 // Basic health
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', ts: new Date().toISOString() });
-});
-
-app.use(express.static("public"));
-
-app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/public/index.html");
-});
-
-app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "keyword.html"));
 });
 
 // SEO: title, description, h1
@@ -890,6 +890,11 @@ app.get('/api/project/keywords', (req,res) => {
 
 app.get('/api/debug/state', (req,res) => {
   res.json({ projectsCount: PROJECTS.length, ranksKeys: Object.keys(RANKS).length, backlinksKeys: Object.keys(BACKLINKS).length });
+});
+
+// ------------ 404 handler for undefined routes ------------
+app.use((req, res) => {
+  res.status(404).json({ error: 'Route not found', path: req.path });
 });
 
 // ------------ Start server ------------
